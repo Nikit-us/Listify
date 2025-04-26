@@ -1,3 +1,3 @@
-# Listify project
+# Listify
 
-Web application emulating Kufar functionality
+Web application Kufar clone
