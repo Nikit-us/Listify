@@ -10,7 +10,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"parentCategory", "subCategory", "products"})
+@ToString(exclude = {"parentCategory", "subCategories", "products"})
 @Entity
 @Table(name = "categories")
 public class Category {

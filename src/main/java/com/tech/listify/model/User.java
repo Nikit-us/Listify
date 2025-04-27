@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"products", "role"})
+@ToString(exclude = {"products", "roles"})
 @Entity
 @Table(name = "users")
 public class User {
@@ -32,7 +32,7 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
-    @Column(name = "phone_number", nullable = false, unique = true, length = 50)
+    @Column(name = "phone_number", unique = true, length = 50)
     private String phoneNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,8 +40,11 @@ public class User {
     private City city;
 
     @CreationTimestamp
-    @Column(name = "registred_at", nullable = false, updatable = false)
+    @Column(name = "registered_at", nullable = false, updatable = false)
     private OffsetDateTime registredAt;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
