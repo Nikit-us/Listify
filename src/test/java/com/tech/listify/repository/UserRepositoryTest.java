@@ -34,10 +34,10 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Optional<Role> existingRole = roleRepository.findByName(RoleType.USER);
+        Optional<Role> existingRole = roleRepository.findByName(RoleType.ROLE_USER);
         if (existingRole.isEmpty()) {
             userRole = new Role();
-            userRole.setName(RoleType.USER);
+            userRole.setName(RoleType.ROLE_USER);
             userRole = entityManager.persistAndFlush(userRole);
         } else {
             userRole = existingRole.get();
@@ -67,9 +67,9 @@ class UserRepositoryTest {
         assertThat(foundUser.getFullName()).isEqualTo("Test User");
         assertThat(foundUser.getRoles()).isNotNull().hasSize(1);
         Role actualRole = foundUser.getRoles().iterator().next();
-        assertThat(actualRole.getName()).isEqualTo(RoleType.USER);
+        assertThat(actualRole.getName()).isEqualTo(RoleType.ROLE_USER);
         // assertThat(foundUser.getCity().getName()).isEqualTo("Testville"); // Если проверяем город
-        assertThat(foundUser.getRegistredAt()).isNotNull();
+        assertThat(foundUser.getRegisteredAt()).isNotNull();
     }
 
     @Test
@@ -122,7 +122,7 @@ class UserRepositoryTest {
     @DisplayName("Should correctly map ManyToMany roles relationship")
     void shouldMapRolesCorrectly() {
         Role adminRole = new Role();
-        adminRole.setName(RoleType.ADMIN);
+        adminRole.setName(RoleType.ROLE_ADMIN);
         adminRole = entityManager.persistFlushFind(adminRole);
 
         User user = new User();
@@ -140,6 +140,6 @@ class UserRepositoryTest {
 
         assertThat(foundUser.getRoles()).hasSize(2)
                 .extracting(Role::getName)
-                .containsExactlyInAnyOrder(RoleType.USER, RoleType.ADMIN);
+                .containsExactlyInAnyOrder(RoleType.ROLE_USER, RoleType.ROLE_ADMIN);
     }
 }

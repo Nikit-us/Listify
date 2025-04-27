@@ -47,8 +47,8 @@ class ProductRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Role userRole = roleRepository.findByName(RoleType.USER)
-                .orElseGet(() -> entityManager.persist(new Role(null, RoleType.USER, null)));
+        Role userRole = roleRepository.findByName(RoleType.ROLE_USER)
+                .orElseGet(() -> entityManager.persist(new Role(null, RoleType.ROLE_USER, null)));
 
         testSeller = new User();
         testSeller.setEmail("seller@example.com");

@@ -41,7 +41,7 @@ public class User {
 
     @CreationTimestamp
     @Column(name = "registered_at", nullable = false, updatable = false)
-    private OffsetDateTime registredAt;
+    private OffsetDateTime registeredAt;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
