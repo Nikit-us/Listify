@@ -5,6 +5,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,13 +30,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler { // 
     }
 
     // Обработчик для ResourceNotFoundException (404 Not Found) - добавим его позже, когда он понадобится
-    @ExceptionHandler(ResourceNotFoundException.class) // Предполагаем, что создадим ResourceNotFoundException
+    @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex, WebRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
         Map<String, Object> body = createErrorBody(HttpStatus.NOT_FOUND, "Ресурс не найден", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
-
 
     // Переопределяем метод для обработки ошибок валидации (@Valid) - 400 Bad Request
     @Override
@@ -54,6 +54,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler { // 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    // Обработчик для AuthenticationException (401 Unauthorized)
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+        log.warn("Authentication attempt failed: {}", ex.getMessage());
+
+        Map<String, Object> body = createErrorBody(HttpStatus.UNAUTHORIZED,
+                "Unauthorized",
+                "Ошибка аутентификации: неверные учетные данные");
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+
     // Общий обработчик для других RuntimeException (500 Internal Server Error)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
@@ -64,14 +75,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler { // 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Вспомогательный метод для создания тела ответа об ошибке
     private Map<String, Object> createErrorBody(HttpStatus status, String error, Object message) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
         body.put("error", error);
         body.put("message", message);
-        //request.getDescription(false) //для информации о запросе
+        //request.getDescription(false)
         return body;
     }
 }

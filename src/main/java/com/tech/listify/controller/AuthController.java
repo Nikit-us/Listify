@@ -1,9 +1,12 @@
 package com.tech.listify.controller;
 
+import com.tech.listify.dto.JwtResponseDto;
+import com.tech.listify.dto.LoginRequestDto;
 import com.tech.listify.dto.UserRegistrationDto;
 import com.tech.listify.dto.UserResponseDto;
 import com.tech.listify.mapper.UserMapper;
 import com.tech.listify.model.User;
+import com.tech.listify.service.AuthService;
 import com.tech.listify.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
-    private final UserService userService;
-    private final UserMapper userMapper;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRegistrationDto registrationDto) {
         log.info("Received registration request for email: {}", registrationDto.getEmail());
-        User regiserUser = userService.registerNewUser(registrationDto);
-        UserResponseDto responseDto = userMapper.toUserResponseDto(regiserUser);
+        UserResponseDto responseDto = authService.register(registrationDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+        log.info("Received login request for email: {}", loginRequestDto.getEmail());
+        JwtResponseDto jwtResponseDto = authService.login(loginRequestDto);
+        log.info("Login successful for email: {}", loginRequestDto.getEmail());
+        return ResponseEntity.ok(jwtResponseDto);
     }
 }
