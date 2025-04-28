@@ -12,7 +12,7 @@ import com.tech.listify.model.enums.RoleType;
 import com.tech.listify.repository.RoleRepository;
 import com.tech.listify.repository.UserRepository;
 import com.tech.listify.service.AuthService;
-import com.tech.listify.util.JwtTokenProvider;
+import com.tech.listify.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;

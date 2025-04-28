@@ -1,4 +1,4 @@
-package com.tech.listify.util;
+package com.tech.listify.security.jwt;
 
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -9,13 +9,13 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value; // Для чтения из application.yml
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey; // Используем SecretKey
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 
@@ -50,11 +50,11 @@ public class JwtTokenProvider {
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(key, Jwts.SIG.HS512) // Убедитесь, что ключ подходит для HS512
+                .signWith(key, Jwts.SIG.HS512)
                 .compact();
     }
 
-    public String getUserNameFromJwtToken(String token) {
+    public String getUserEmailFromJwtToken(String token) {
         SecretKey key = getSigningKey();
         return Jwts.parser().verifyWith(key).build()
                 .parseSignedClaims(token).getPayload().getSubject();

@@ -1,5 +1,6 @@
 package com.tech.listify.config;
 
+import com.tech.listify.security.jwt.JwtAuthTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final JwtAuthTokenFilter jwtAuthTokenFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,21 +40,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // Отключаем CSRF
-                // --- Устанавливаем политику сессий STATELESS ---
+                .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        // .accessDeniedHandler(...) // Можно добавить позже для ошибок 403 Forbidden
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        // --- Разрешаем эндпоинты регистрации и логина ---
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                        // --- Разрешаем Swagger UI (если будете добавлять) ---
-                        // .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // --- Все остальные запросы требуют аутентификации ---
+                        .requestMatchers(HttpMethod.GET, "api/ads/**").permitAll()
                         .anyRequest().authenticated()
                 );
+        http.addFilterAt(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
