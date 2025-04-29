@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"product"})
+@ToString(exclude = {"advertisement"})
 @Entity
 @Table(name = "advertisement_images")
 public class AdvertisementImage {

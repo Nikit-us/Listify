@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"products", "roles"})
+@ToString(exclude = {"advertisements", "roles"})
 @Entity
 @Table(name = "users")
 @SuppressWarnings("java:S1948")
