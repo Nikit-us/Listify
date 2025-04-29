@@ -1,4 +1,4 @@
-package com.tech.listify.dto;
+package com.tech.listify.dto.advertisementDto;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.tech.listify.dto;
+package com.tech.listify.dto.advertisementDto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import com.tech.listify.model.enums.AdvertisementStatus;

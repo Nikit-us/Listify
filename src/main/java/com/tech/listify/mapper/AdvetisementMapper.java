@@ -1,6 +1,6 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.*;
+import com.tech.listify.dto.advertisementDto.*;
 import com.tech.listify.model.Advertisement;
 import com.tech.listify.model.AdvertisementImage;
 import org.springframework.data.domain.Page;
