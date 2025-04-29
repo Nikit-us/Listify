@@ -1,8 +1,8 @@
 package com.tech.listify.repository;
 
 import com.tech.listify.model.*;
-import com.tech.listify.model.enums.ProductCondition;
-import com.tech.listify.model.enums.ProductStatus;
+import com.tech.listify.model.enums.AdvertisementCondition;
+import com.tech.listify.model.enums.AdvertisementStatus;
 import com.tech.listify.model.enums.RoleType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -74,8 +74,8 @@ class AdvertisementRepositoryTest {
         newAdvertisement.setTitle("Test Laptop");
         newAdvertisement.setDescription("A great laptop for testing.");
         newAdvertisement.setPrice(new BigDecimal("1200.50"));
-        newAdvertisement.setStatus(ProductStatus.ACTIVE);
-        newAdvertisement.setCondition(ProductCondition.USED_GOOD);
+        newAdvertisement.setStatus(AdvertisementStatus.ACTIVE);
+        newAdvertisement.setCondition(AdvertisementCondition.USED_GOOD);
         newAdvertisement.setSeller(testSeller);
         newAdvertisement.setCategory(testCategory);
         newAdvertisement.setCity(testCity);
@@ -87,8 +87,8 @@ class AdvertisementRepositoryTest {
         assertThat(savedAdvertisement.getId()).isNotNull().isPositive();
         assertThat(savedAdvertisement.getTitle()).isEqualTo("Test Laptop");
         assertThat(savedAdvertisement.getPrice()).isEqualTo(new BigDecimal("1200.50"));
-        assertThat(savedAdvertisement.getStatus()).isEqualTo(ProductStatus.ACTIVE);
-        assertThat(savedAdvertisement.getCondition()).isEqualTo(ProductCondition.USED_GOOD);
+        assertThat(savedAdvertisement.getStatus()).isEqualTo(AdvertisementStatus.ACTIVE);
+        assertThat(savedAdvertisement.getCondition()).isEqualTo(AdvertisementCondition.USED_GOOD);
 
         assertThat(foundProductOpt).isPresent();
         Advertisement foundAdvertisement = foundProductOpt.get();
@@ -103,16 +103,16 @@ class AdvertisementRepositoryTest {
     @Test
     @DisplayName("Should find products by status with pagination")
     void shouldFindByStatusWithPagination() {
-        Advertisement p1 = new Advertisement(null, "Active Product 1", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
-        Advertisement p2 = new Advertisement(null, "Inactive Product", "Desc", BigDecimal.ONE, ProductStatus.INACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
-        Advertisement p3 = new Advertisement(null, "Active Product 2", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.USED_GOOD, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p1 = new Advertisement(null, "Active Product 1", "Desc", BigDecimal.TEN, AdvertisementStatus.ACTIVE, AdvertisementCondition.NEW, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p2 = new Advertisement(null, "Inactive Product", "Desc", BigDecimal.ONE, AdvertisementStatus.INACTIVE, AdvertisementCondition.NEW, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p3 = new Advertisement(null, "Active Product 2", "Desc", BigDecimal.TEN, AdvertisementStatus.ACTIVE, AdvertisementCondition.USED_GOOD, null, null, testSeller, testCategory, testCity, null);
         entityManager.persist(p1);
         entityManager.persist(p2);
         entityManager.persist(p3);
         entityManager.flush();
 
         PageRequest pageable = PageRequest.of(0, 2);
-        Page<Advertisement> activeProductsPage = advertisementRepository.findByStatus(ProductStatus.ACTIVE, pageable);
+        Page<Advertisement> activeProductsPage = advertisementRepository.findByStatus(AdvertisementStatus.ACTIVE, pageable);
 
         assertThat(activeProductsPage).isNotNull();
         assertThat(activeProductsPage.getTotalElements()).isEqualTo(2);
@@ -120,7 +120,7 @@ class AdvertisementRepositoryTest {
         assertThat(activeProductsPage.getContent()).hasSize(2);
         assertThat(activeProductsPage.getContent())
                 .extracting(Advertisement::getStatus)
-                .containsOnly(ProductStatus.ACTIVE); // Убеждаемся, что все найденные - активные
+                .containsOnly(AdvertisementStatus.ACTIVE); // Убеждаемся, что все найденные - активные
     }
 
     @Test
@@ -132,8 +132,8 @@ class AdvertisementRepositoryTest {
         advertisement.setTitle("Product With Images");
         advertisement.setDescription("Desc");
         advertisement.setPrice(BigDecimal.TEN);
-        advertisement.setStatus(ProductStatus.ACTIVE);
-        advertisement.setCondition(ProductCondition.NEW);
+        advertisement.setStatus(AdvertisementStatus.ACTIVE);
+        advertisement.setCondition(AdvertisementCondition.NEW);
         advertisement.setSeller(testSeller);
         advertisement.setCategory(testCategory);
         advertisement.setCity(testCity);

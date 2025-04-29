@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ProductCondition {
+public enum AdvertisementCondition {
     NEW("Новое"),
     USED_PERFECT("Б/у (идеальное)"),
     USED_GOOD("Б/у (хорошее)"),

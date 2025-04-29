@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ProductStatus {
+public enum AdvertisementStatus {
     ACTIVE("Активно"),
     INACTIVE("Неактивно"),
     SOLD("Продано");

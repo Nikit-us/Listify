@@ -1,7 +1,7 @@
 package com.tech.listify.model;
 
-import com.tech.listify.model.enums.ProductCondition;
-import com.tech.listify.model.enums.ProductStatus;
+import com.tech.listify.model.enums.AdvertisementCondition;
+import com.tech.listify.model.enums.AdvertisementStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,11 +37,11 @@ public class Advertisement {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 50)
-    private ProductStatus status = ProductStatus.ACTIVE;
+    private AdvertisementStatus status = AdvertisementStatus.ACTIVE;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "condition", length = 50)
-    private ProductCondition condition;
+    private AdvertisementCondition condition;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
