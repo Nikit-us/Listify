@@ -64,7 +64,7 @@ public class User implements UserDetails {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             fetch = FetchType.LAZY
     )
-    private Set<Product> products = new HashSet<>();
+    private Set<Advertisement> advertisements = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

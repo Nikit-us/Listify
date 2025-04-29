@@ -29,5 +29,5 @@ public class City {
     private Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
-    private Set<Product> products = new HashSet<>();
+    private Set<Advertisement> advertisements = new HashSet<>();
 }

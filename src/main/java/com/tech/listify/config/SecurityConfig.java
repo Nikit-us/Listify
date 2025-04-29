@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/ads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test/public").permitAll()
                         .anyRequest().authenticated()
                 );
         http.addFilterAt(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);

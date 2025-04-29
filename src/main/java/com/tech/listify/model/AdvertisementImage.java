@@ -13,8 +13,8 @@ import java.time.OffsetDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"product"})
 @Entity
-@Table(name = "product_images")
-public class ProductImage {
+@Table(name = "advertisement_images")
+public class AdvertisementImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +22,8 @@ public class ProductImage {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "advertisement_id", nullable = false)
+    private Advertisement advertisement;
 
     @Column(name = "image_url", nullable = false, length = 512)
     private String imageUrl;

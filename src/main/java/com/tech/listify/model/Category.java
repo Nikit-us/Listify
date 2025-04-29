@@ -31,6 +31,6 @@ public class Category {
     private Set<Category> subCategories;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<Product> products;
+    private Set<Advertisement> advertisements;
 
 }

@@ -18,8 +18,8 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"seller", "category", "city", "images"})
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "advertisements")
+public class Advertisement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,16 +63,16 @@ public class Product {
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ProductImage> images = new ArrayList<>();
+    @OneToMany(mappedBy = "advertisement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AdvertisementImage> images = new ArrayList<>();
 
-    public void addImage(ProductImage image) {
+    public void addImage(AdvertisementImage image) {
         images.add(image);
-        image.setProduct(this);
+        image.setAdvertisement(this);
     }
 
-    public void removeImage(ProductImage image) {
+    public void removeImage(AdvertisementImage image) {
         images.remove(image);
-        image.setProduct(null);
+        image.setAdvertisement(null);
     }
 }

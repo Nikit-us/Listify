@@ -23,13 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class ProductRepositoryTest {
+class AdvertisementRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
-    private ProductRepository productRepository;
+    private AdvertisementRepository advertisementRepository;
 
     // Нужны будут репозитории для связанных сущностей, чтобы их подготовить
     @Autowired
@@ -70,56 +70,56 @@ class ProductRepositoryTest {
     @DisplayName("Should save product with relations and enums, then find by ID")
     void shouldSaveAndFindProduct() {
         // --- Arrange ---
-        Product newProduct = new Product();
-        newProduct.setTitle("Test Laptop");
-        newProduct.setDescription("A great laptop for testing.");
-        newProduct.setPrice(new BigDecimal("1200.50"));
-        newProduct.setStatus(ProductStatus.ACTIVE);
-        newProduct.setCondition(ProductCondition.USED_GOOD);
-        newProduct.setSeller(testSeller);
-        newProduct.setCategory(testCategory);
-        newProduct.setCity(testCity);
+        Advertisement newAdvertisement = new Advertisement();
+        newAdvertisement.setTitle("Test Laptop");
+        newAdvertisement.setDescription("A great laptop for testing.");
+        newAdvertisement.setPrice(new BigDecimal("1200.50"));
+        newAdvertisement.setStatus(ProductStatus.ACTIVE);
+        newAdvertisement.setCondition(ProductCondition.USED_GOOD);
+        newAdvertisement.setSeller(testSeller);
+        newAdvertisement.setCategory(testCategory);
+        newAdvertisement.setCity(testCity);
 
-        Product savedProduct = productRepository.save(newProduct);
-        Optional<Product> foundProductOpt = productRepository.findById(savedProduct.getId());
+        Advertisement savedAdvertisement = advertisementRepository.save(newAdvertisement);
+        Optional<Advertisement> foundProductOpt = advertisementRepository.findById(savedAdvertisement.getId());
 
-        assertThat(savedProduct).isNotNull();
-        assertThat(savedProduct.getId()).isNotNull().isPositive();
-        assertThat(savedProduct.getTitle()).isEqualTo("Test Laptop");
-        assertThat(savedProduct.getPrice()).isEqualTo(new BigDecimal("1200.50"));
-        assertThat(savedProduct.getStatus()).isEqualTo(ProductStatus.ACTIVE);
-        assertThat(savedProduct.getCondition()).isEqualTo(ProductCondition.USED_GOOD);
+        assertThat(savedAdvertisement).isNotNull();
+        assertThat(savedAdvertisement.getId()).isNotNull().isPositive();
+        assertThat(savedAdvertisement.getTitle()).isEqualTo("Test Laptop");
+        assertThat(savedAdvertisement.getPrice()).isEqualTo(new BigDecimal("1200.50"));
+        assertThat(savedAdvertisement.getStatus()).isEqualTo(ProductStatus.ACTIVE);
+        assertThat(savedAdvertisement.getCondition()).isEqualTo(ProductCondition.USED_GOOD);
 
         assertThat(foundProductOpt).isPresent();
-        Product foundProduct = foundProductOpt.get();
-        assertThat(foundProduct.getTitle()).isEqualTo("Test Laptop");
-        assertThat(foundProduct.getSeller().getId()).isEqualTo(testSeller.getId());
-        assertThat(foundProduct.getCategory().getName()).isEqualTo("Electronics");
-        assertThat(foundProduct.getCity().getName()).isEqualTo("Test City");
-        assertThat(foundProduct.getCreatedAt()).isNotNull();
-        assertThat(foundProduct.getUpdatedAt()).isNotNull();
+        Advertisement foundAdvertisement = foundProductOpt.get();
+        assertThat(foundAdvertisement.getTitle()).isEqualTo("Test Laptop");
+        assertThat(foundAdvertisement.getSeller().getId()).isEqualTo(testSeller.getId());
+        assertThat(foundAdvertisement.getCategory().getName()).isEqualTo("Electronics");
+        assertThat(foundAdvertisement.getCity().getName()).isEqualTo("Test City");
+        assertThat(foundAdvertisement.getCreatedAt()).isNotNull();
+        assertThat(foundAdvertisement.getUpdatedAt()).isNotNull();
     }
 
     @Test
     @DisplayName("Should find products by status with pagination")
     void shouldFindByStatusWithPagination() {
-        Product p1 = new Product(null, "Active Product 1", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
-        Product p2 = new Product(null, "Inactive Product", "Desc", BigDecimal.ONE, ProductStatus.INACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
-        Product p3 = new Product(null, "Active Product 2", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.USED_GOOD, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p1 = new Advertisement(null, "Active Product 1", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p2 = new Advertisement(null, "Inactive Product", "Desc", BigDecimal.ONE, ProductStatus.INACTIVE, ProductCondition.NEW, null, null, testSeller, testCategory, testCity, null);
+        Advertisement p3 = new Advertisement(null, "Active Product 2", "Desc", BigDecimal.TEN, ProductStatus.ACTIVE, ProductCondition.USED_GOOD, null, null, testSeller, testCategory, testCity, null);
         entityManager.persist(p1);
         entityManager.persist(p2);
         entityManager.persist(p3);
         entityManager.flush();
 
         PageRequest pageable = PageRequest.of(0, 2);
-        Page<Product> activeProductsPage = productRepository.findByStatus(ProductStatus.ACTIVE, pageable);
+        Page<Advertisement> activeProductsPage = advertisementRepository.findByStatus(ProductStatus.ACTIVE, pageable);
 
         assertThat(activeProductsPage).isNotNull();
         assertThat(activeProductsPage.getTotalElements()).isEqualTo(2);
         assertThat(activeProductsPage.getTotalPages()).isEqualTo(1);
         assertThat(activeProductsPage.getContent()).hasSize(2);
         assertThat(activeProductsPage.getContent())
-                .extracting(Product::getStatus)
+                .extracting(Advertisement::getStatus)
                 .containsOnly(ProductStatus.ACTIVE); // Убеждаемся, что все найденные - активные
     }
 
@@ -128,41 +128,41 @@ class ProductRepositoryTest {
     void shouldMapImagesCorrectly() {
         // --- Arrange ---
         // Используем NoArgsConstructor и сеттеры
-        Product product = new Product(); // <--- ИЗМЕНЕНИЕ: Используем конструктор по умолчанию
-        product.setTitle("Product With Images");
-        product.setDescription("Desc");
-        product.setPrice(BigDecimal.TEN);
-        product.setStatus(ProductStatus.ACTIVE);
-        product.setCondition(ProductCondition.NEW);
-        product.setSeller(testSeller);
-        product.setCategory(testCategory);
-        product.setCity(testCity);
+        Advertisement advertisement = new Advertisement(); // <--- ИЗМЕНЕНИЕ: Используем конструктор по умолчанию
+        advertisement.setTitle("Product With Images");
+        advertisement.setDescription("Desc");
+        advertisement.setPrice(BigDecimal.TEN);
+        advertisement.setStatus(ProductStatus.ACTIVE);
+        advertisement.setCondition(ProductCondition.NEW);
+        advertisement.setSeller(testSeller);
+        advertisement.setCategory(testCategory);
+        advertisement.setCity(testCity);
         // Поле 'images' будет инициализировано как new HashSet<>() благодаря инициализатору в классе Product
 
-        ProductImage img1 = new ProductImage(null, null, "http://example.com/img1.jpg", false, null);
-        ProductImage img2 = new ProductImage(null, null, "http://example.com/img2.jpg", true, null); // Превью
+        AdvertisementImage img1 = new AdvertisementImage(null, null, "http://example.com/img1.jpg", false, null);
+        AdvertisementImage img2 = new AdvertisementImage(null, null, "http://example.com/img2.jpg", true, null); // Превью
 
         // Теперь этот вызов будет работать, т.к. product.images не null
-        product.addImage(img1); // <--- Строка 130 (примерно)
-        product.addImage(img2);
+        advertisement.addImage(img1); // <--- Строка 130 (примерно)
+        advertisement.addImage(img2);
 
         // --- Act ---
-        Product savedProduct = productRepository.save(product);
+        Advertisement savedAdvertisement = advertisementRepository.save(advertisement);
         entityManager.flush();
         entityManager.clear();
 
-        Product foundProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
+        Advertisement foundAdvertisement = advertisementRepository.findById(savedAdvertisement.getId()).orElseThrow();
 
         // --- Assert ---
-        assertThat(foundProduct.getImages()).hasSize(2);
-        assertThat(foundProduct.getImages())
-                .extracting(ProductImage::getImageUrl)
+        assertThat(foundAdvertisement.getImages()).hasSize(2);
+        assertThat(foundAdvertisement.getImages())
+                .extracting(AdvertisementImage::getImageUrl)
                 .containsExactlyInAnyOrder("http://example.com/img1.jpg", "http://example.com/img2.jpg");
-        assertThat(foundProduct.getImages())
-                .filteredOn(ProductImage::isPreview)
+        assertThat(foundAdvertisement.getImages())
+                .filteredOn(AdvertisementImage::isPreview)
                 .hasSize(1)
                 .first()
-                .extracting(ProductImage::getImageUrl)
+                .extracting(AdvertisementImage::getImageUrl)
                 .isEqualTo("http://example.com/img2.jpg");
     }
 }
