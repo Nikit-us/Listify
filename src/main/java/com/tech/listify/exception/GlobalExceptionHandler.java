@@ -75,6 +75,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler { // 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // Статус 403
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        log.warn("Access Denied: {}", ex.getMessage());
+        Map<String, Object> body = createErrorBody(HttpStatus.FORBIDDEN, "Доступ запрещен", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
     private Map<String, Object> createErrorBody(HttpStatus status, String error, Object message) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());

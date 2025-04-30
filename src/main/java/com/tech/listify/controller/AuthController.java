@@ -1,13 +1,10 @@
 package com.tech.listify.controller;
 
-import com.tech.listify.dto.JwtResponseDto;
-import com.tech.listify.dto.LoginRequestDto;
-import com.tech.listify.dto.UserRegistrationDto;
-import com.tech.listify.dto.UserResponseDto;
-import com.tech.listify.mapper.UserMapper;
-import com.tech.listify.model.User;
+import com.tech.listify.dto.userDto.JwtResponseDto;
+import com.tech.listify.dto.userDto.LoginRequestDto;
+import com.tech.listify.dto.userDto.UserRegistrationDto;
+import com.tech.listify.dto.userDto.UserResponseDto;
 import com.tech.listify.service.AuthService;
-import com.tech.listify.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

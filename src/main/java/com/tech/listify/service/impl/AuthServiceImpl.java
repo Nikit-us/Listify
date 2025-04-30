@@ -1,9 +1,9 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.JwtResponseDto;
-import com.tech.listify.dto.LoginRequestDto;
-import com.tech.listify.dto.UserRegistrationDto;
-import com.tech.listify.dto.UserResponseDto;
+import com.tech.listify.dto.userDto.JwtResponseDto;
+import com.tech.listify.dto.userDto.LoginRequestDto;
+import com.tech.listify.dto.userDto.UserRegistrationDto;
+import com.tech.listify.dto.userDto.UserResponseDto;
 import com.tech.listify.exception.UserAlreadyExistsException;
 import com.tech.listify.mapper.UserMapper;
 import com.tech.listify.model.Role;

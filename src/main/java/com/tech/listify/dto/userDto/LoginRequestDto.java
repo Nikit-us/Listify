@@ -1,4 +1,4 @@
-package com.tech.listify.dto;
+package com.tech.listify.dto.userDto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

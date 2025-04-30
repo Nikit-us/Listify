@@ -14,7 +14,7 @@ import java.util.List;
 public class AdvertisementUpdateDto {
 
     @Size(min = 5, max = 255, message = "Заголовок должен содержать от 5 до 255 символов")
-    private String title; // Не @NotBlank, т.к. может не обновляться
+    private String title;
 
     @Size(max = 5000, message = "Описание не может быть длиннее 5000 символов")
     private String description;

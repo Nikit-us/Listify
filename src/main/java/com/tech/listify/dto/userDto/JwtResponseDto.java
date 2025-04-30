@@ -1,4 +1,4 @@
-package com.tech.listify.dto;
+package com.tech.listify.dto.userDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

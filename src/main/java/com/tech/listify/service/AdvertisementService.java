@@ -2,6 +2,10 @@ package com.tech.listify.service;
 
 import com.tech.listify.dto.advertisementDto.AdvertisementCreateDto;
 import com.tech.listify.dto.advertisementDto.AdvertisementDetailDto;
+import com.tech.listify.dto.advertisementDto.AdvertisementResponseDto;
+import com.tech.listify.dto.advertisementDto.AdvertisementUpdateDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AdvertisementService {
     /**
@@ -14,8 +18,33 @@ public interface AdvertisementService {
      */
     AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, String userEmail);
 
-    // AdvertisementDetailDto getAdvertisementById(Long id);
-    // Page<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable);
-    // AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, String userEmail);
+    /**
+     * Получает объявление по его ID.
+     *
+     * @param id ID объявления.
+     * @return DTO с детальной информацией об объявлении.
+     * @throws ResourceNotFoundException если объявление не найдено.
+     */
+    AdvertisementDetailDto getAdvertisementById(Long id);
+
+    /**
+     * Получает страницу активных объявлений.
+     *
+     * @param pageable Параметры пагинации.
+     * @return Страница с DTO объявлений для списка.
+     */
+    Page<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable);
+
+    /**
+     * Обновляет существующее объявление.
+     *
+     * @param id ID обновляемого объявления.
+     * @param updateDto DTO с данными для обновления.
+     * @param userEmail Email пользователя, выполняющего обновление.
+     * @return DTO с детальной информацией об обновленном объявлении.
+     * @throws ResourceNotFoundException если объявление, категория или город не найдены.
+     * @throws AccessDeniedException если пользователь не является владельцем объявления.
+     */
+    AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, String userEmail);
     // void deleteAdvertisement(Long id, String userEmail);
 }

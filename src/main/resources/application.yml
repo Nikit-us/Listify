@@ -14,6 +14,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  mvc:
+    static-path-pattern: /static/**
+  web:
+    resources:
+      static-locations: classpath:/static/, file:${file.upload-dir}
 logging:
   level:
     org.hibernate.SQL: DEBUG
@@ -22,3 +31,5 @@ app:
   jwt:
     secret: ${jwt.secret}
     expiration-ms: ${jwt.expiration-ms}
+upload:
+  path: ./uploads

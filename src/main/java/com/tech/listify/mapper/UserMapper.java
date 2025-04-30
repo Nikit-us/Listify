@@ -1,7 +1,7 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.UserRegistrationDto;
-import com.tech.listify.dto.UserResponseDto;
+import com.tech.listify.dto.userDto.UserRegistrationDto;
+import com.tech.listify.dto.userDto.UserResponseDto;
 import com.tech.listify.model.User;
 
 public interface UserMapper {
