@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface AdvertisementImageRepository extends JpaRepository<AdvertisementImage, Long> {
     List<AdvertisementImage> findByAdvertisementId(Long advertisementId);
     Optional<AdvertisementImage> findByAdvertisementIdAndIsPreviewTrue(Long advertisementId);
+    void deleteByAdvertisementId(Long advertisementId);
 }
