@@ -83,6 +83,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler { // 
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(FileStorageException.class) // Обработчик ошибок хранения файлов
+    public ResponseEntity<Object> handleFileStorageException(FileStorageException ex, WebRequest request) {
+        log.error("File storage error: {}", ex.getMessage(), ex.getCause());
+        // Возвращаем 500, т.к. это проблема на стороне сервера (невалидный файл или ошибка записи)
+        Map<String, Object> body = createErrorBody(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ошибка обработки файла",
+                ex.getMessage()); // Можно вернуть сообщение из исключения
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private Map<String, Object> createErrorBody(HttpStatus status, String error, Object message) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());

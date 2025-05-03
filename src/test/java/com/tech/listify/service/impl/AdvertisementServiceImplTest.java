@@ -113,7 +113,7 @@ class AdvertisementServiceImplTest {
         when(advertisementRepository.save(any(Advertisement.class))).thenReturn(savedAd); // Репозиторий возвращает Ad с ID
         when(advertisementMapper.toAdvertisementDetailDto(savedAd)).thenReturn(expectedDetailDto); // Маппер DTO
 
-        AdvertisementDetailDto resultDto = advertisementService.createAdvertisement(createDto, userEmail);
+        AdvertisementDetailDto resultDto = advertisementService.createAdvertisement(createDto, null,userEmail);
 
         assertThat(resultDto).isNotNull().isEqualTo(expectedDetailDto);
 
@@ -147,7 +147,7 @@ class AdvertisementServiceImplTest {
     void createAdvertisement_UserNotFound() {
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, userEmail))
+        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, null, userEmail))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Пользователь с email '" + userEmail + "' не найден.");
 
@@ -161,7 +161,7 @@ class AdvertisementServiceImplTest {
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(testUser));
         when(categoryRepository.findById(createDto.getCategoryId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, userEmail))
+        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, null, userEmail))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Категория с ID " + createDto.getCategoryId() + " не найдена.");
 
@@ -177,7 +177,7 @@ class AdvertisementServiceImplTest {
         when(categoryRepository.findById(createDto.getCategoryId())).thenReturn(Optional.of(testCategory));
         when(cityRepository.findById(createDto.getCityId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, userEmail))
+        assertThatThrownBy(() -> advertisementService.createAdvertisement(createDto, null, userEmail))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Город с ID " + createDto.getCityId() + " не найден.");
 
@@ -200,7 +200,7 @@ class AdvertisementServiceImplTest {
         when(advertisementRepository.save(any(Advertisement.class))).thenReturn(savedAd);
         when(advertisementMapper.toAdvertisementDetailDto(savedAd)).thenReturn(expectedDetailDto);
 
-        AdvertisementDetailDto resultDto = advertisementService.createAdvertisement(createDto, userEmail);
+        AdvertisementDetailDto resultDto = advertisementService.createAdvertisement(createDto, null, userEmail);
 
         assertThat(resultDto).isNotNull();
 

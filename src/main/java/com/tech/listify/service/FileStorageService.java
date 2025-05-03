@@ -15,7 +15,7 @@ public interface FileStorageService {
      * @throws IOException Если произошла ошибка ввода/вывода.
      * @throws FileStorageException Если файл некорректен.
      */
-    String saveFile(MultipartFile file, String contentType) throws IOException, IOException;
+    String saveFile(MultipartFile file, String contentType) throws IOException;
 
     /**
      * Удаляет файл по его URL-пути.

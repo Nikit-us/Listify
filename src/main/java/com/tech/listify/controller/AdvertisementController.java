@@ -4,7 +4,6 @@ import com.tech.listify.dto.advertisementDto.AdvertisementCreateDto;
 import com.tech.listify.dto.advertisementDto.AdvertisementDetailDto;
 import com.tech.listify.dto.advertisementDto.AdvertisementResponseDto;
 import com.tech.listify.dto.advertisementDto.AdvertisementUpdateDto;
-import com.tech.listify.model.Advertisement;
 import com.tech.listify.service.AdvertisementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/ads")
@@ -26,11 +28,12 @@ public class AdvertisementController {
     private final AdvertisementService advertisementService;
 
     @PostMapping
-    public ResponseEntity<AdvertisementDetailDto> createAdvertisement(@Valid @RequestBody AdvertisementCreateDto createDto,
+    public ResponseEntity<AdvertisementDetailDto> createAdvertisement(@Valid @RequestPart("advertisement") AdvertisementCreateDto createDto,
+                                                                      @RequestPart(value = "images", required = false) List<MultipartFile> images,
                                                                       Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Received request to create advertisement from user: {}", userEmail);
-        AdvertisementDetailDto createdAdDto = advertisementService.createAdvertisement(createDto, userEmail);
+        AdvertisementDetailDto createdAdDto = advertisementService.createAdvertisement(createDto, images, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAdDto);
     }
 
@@ -54,12 +57,24 @@ public class AdvertisementController {
     @PutMapping("/{id}")
     public ResponseEntity<AdvertisementDetailDto> updateAdvertisement(
             @PathVariable Long id,
-            @Valid @RequestBody AdvertisementUpdateDto updateDto,
+            @Valid @RequestPart("advertisement") AdvertisementUpdateDto updateDto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
             Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Received request to update advertisement ID: {} from user: {}", id, userEmail);
-        AdvertisementDetailDto adDto = advertisementService.updateAdvertisement(id, updateDto, userEmail);
+        AdvertisementDetailDto adDto = advertisementService.updateAdvertisement(id, updateDto, images, userEmail);
         return ResponseEntity.status(HttpStatus.OK).body(adDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAdvertisement(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+        log.info("Received request to delete advertisement ID: {} from user: {}", id, userEmail);
+        advertisementService.deleteAdvertisement(id, userEmail);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
 }
