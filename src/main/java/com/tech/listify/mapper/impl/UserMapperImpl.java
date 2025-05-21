@@ -1,5 +1,6 @@
 package com.tech.listify.mapper.impl;
 
+import com.tech.listify.dto.userDto.UserProfileDto;
 import com.tech.listify.dto.userDto.UserRegistrationDto;
 import com.tech.listify.dto.userDto.UserResponseDto;
 import com.tech.listify.mapper.UserMapper;
@@ -36,6 +37,26 @@ public class UserMapperImpl implements UserMapper {
         userResponseDto.setPhoneNumber(user.getPhoneNumber());
         userResponseDto.setRegisteredAt(user.getRegisteredAt());
         return userResponseDto;
+    }
+
+    @Override
+    public UserProfileDto toUserProfileDto(User user, Integer totalActiveAds) {
+        if(user == null) {
+            return null;
+        }
+
+        UserProfileDto dto = new UserProfileDto();
+        dto.setId(user.getId());
+        dto.setFullName(user.getFullName());
+        if(user.getCity() != null) {
+            dto.setCityId(user.getCity().getId());
+        }
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setRegisteredAt(user.getRegisteredAt());
+        dto.setTotalActiveAdvertisements(totalActiveAds);
+        dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setEmail(user.getEmail());
+        return dto;
     }
 
 }

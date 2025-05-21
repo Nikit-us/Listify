@@ -23,6 +23,12 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/, file:${file.upload-dir}
+  cache:
+    cache-names: cities, categories
+    caffeine:
+      spec: >
+        maximumSize=500, 
+        expireAfterWrite=60m
 logging:
   level:
     org.hibernate.SQL: DEBUG

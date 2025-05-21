@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 public class AdvertisementUpdateDto {
@@ -30,6 +29,4 @@ public class AdvertisementUpdateDto {
     private AdvertisementCondition condition;
 
     private AdvertisementStatus status;
-
-    private List<String> imageUrls;
 }

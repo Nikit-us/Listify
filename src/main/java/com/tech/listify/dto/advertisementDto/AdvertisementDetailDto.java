@@ -27,7 +27,6 @@ public class AdvertisementDetailDto {
 
     private Long sellerId;
     private String sellerName;
-    // private OffsetDateTime sellerRegistrationDate;
 
     private List<AdvertisementImageDto> images;
 }

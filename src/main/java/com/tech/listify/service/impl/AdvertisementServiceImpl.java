@@ -1,22 +1,23 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.advertisementDto.AdvertisementCreateDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementDetailDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementResponseDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementUpdateDto;
+import com.tech.listify.dto.advertisementDto.*;
 import com.tech.listify.exception.FileStorageException;
 import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.impl.AdvertisementMapperImpl;
 import com.tech.listify.model.*;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import com.tech.listify.repository.*;
+import com.tech.listify.repository.specification.AdvertisementSpecification;
 import com.tech.listify.service.AdvertisementService;
+import com.tech.listify.service.CategoryService;
+import com.tech.listify.service.CityService;
 import com.tech.listify.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.tech.listify.exception.AccessDeniedException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,25 +33,24 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     private final AdvertisementRepository advertisementRepository;
     private final UserRepository userRepository;
-    private final CategoryRepository categoryRepository;
-    private final CityRepository cityRepository;
+    private final CategoryService categoryService;
+    private final CityService cityService;
     private final AdvertisementMapperImpl advertisementMapper;
     private final AdvertisementImageRepository advertisementImageRepository;
     private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
-    public AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, List<MultipartFile> images, String userEmail) {
-        log.info("Creating new advertisement '{}' for user {}", createDto.getTitle(), userEmail);
-        User seller = userRepository.findByEmail(userEmail).orElseThrow(() -> {
-            log.error("Attempt to create advertisement for non-existent user: {}", userEmail);
-            return new ResourceNotFoundException("Пользователь с email '" + userEmail + "' не найден.");
+    public AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, List<MultipartFile> images, String sellerEmail) {
+        log.info("Creating new advertisement '{}' for user {}", createDto.getTitle(), sellerEmail);
+        User seller = userRepository.findByEmail(sellerEmail).orElseThrow(() -> {
+            log.error("Attempt to create advertisement for non-existent user: {}", sellerEmail);
+            return new ResourceNotFoundException("Пользователь с email '" + sellerEmail + "' не найден.");
         });
 
-        Category category = categoryRepository.findById(createDto.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Категория с ID " + createDto.getCategoryId() + " не найдена."));
+        Category category = categoryService.findCategoryById(createDto.getCategoryId());
 
-        City city = cityRepository.findById(createDto.getCityId()).orElseThrow(() -> new ResourceNotFoundException("Город с ID " + createDto.getCityId() + " не найден."));
-
+        City city = cityService.findCityById(createDto.getCityId());
         Advertisement newAd = advertisementMapper.toAdvertisement(createDto);
 
         newAd.setSeller(seller);
@@ -58,20 +58,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         newAd.setCity(city);
         newAd.setStatus(AdvertisementStatus.ACTIVE);
         log.debug("Advertisement entity populated with seller, category, city, status.");
-
-        if(createDto.getImageUrls() != null && !createDto.getImageUrls().isEmpty()) {
-            boolean isFirstImage = true;
-            for(String imageUrl : createDto.getImageUrls()) {
-                AdvertisementImage image = new AdvertisementImage();
-                image.setImageUrl(imageUrl);
-                image.setPreview(isFirstImage);
-                newAd.addImage(image);
-                isFirstImage = false;
-                log.trace("Added image with URL: {}", imageUrl);
-            }
-        } else {
-            log.debug("No image URLs provided for the advertisement.");
-        }
 
         Advertisement savedAd = advertisementRepository.save(newAd);
         log.info("Saved initial advertisment with ID {}", savedAd.getId());
@@ -101,6 +87,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     }
 
     @Override
+    @Transactional
     public void deleteAdvertisement(Long id, String userEmail) {
         log.info("Attempting to delete advertisement with ID: {} by user: {}", id, userEmail);
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -121,8 +108,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImages, String userEmail) {
+    @Transactional
+    public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImageFiles, String userEmail) {
         log.info("Attempting to update advertisement with ID: {} by user: {}", id, userEmail);
 
         Advertisement ad = advertisementRepository.findById(id)
@@ -152,15 +139,13 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         }
 
         if(updateDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(updateDto.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Категория с ID " + updateDto.getCategoryId() + " не найдена."));
+            Category category = categoryService.findCategoryById(updateDto.getCategoryId());
             ad.setCategory(category);
             update = true;
         }
 
         if(updateDto.getCityId() != null) {
-            City city = cityRepository.findById(updateDto.getCityId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Город с ID " + updateDto.getCityId() + " не найден."));
+            City city = cityService.findCityById(updateDto.getCityId());
             ad.setCity(city);
             update = true;
         }
@@ -170,25 +155,15 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             update = true;
         }
 
-        if(updateDto.getImageUrls() != null) {
-            log.debug("Updating images for advertisement ID: {}", id);
-            ad.getImages().clear();
-            for(String imageUrl: updateDto.getImageUrls()) {
-                AdvertisementImage newImage = new AdvertisementImage();
-                newImage.setImageUrl(imageUrl.trim());
-                if(ad.getImages().isEmpty()){
-                    newImage.setPreview(true);
-                }
-                ad.addImage(newImage);
-            }
-            update = true;
-        }
-
-        if(newImages != null) {
+        if(newImageFiles != null && !newImageFiles.isEmpty()) {
             log.debug("Replacing images for advertisement ID: {}", id);
             deleteExistingImages(ad);
-            List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImages, ad);
+            List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImageFiles, ad);
             ad.setImages(savedImageEntities);
+            update = true;
+        } else if (newImageFiles != null && newImageFiles.isEmpty()) {
+            log.debug("Removing all images for advertisement ID: {}", id);
+            deleteExistingImages(ad);
             update = true;
         }
 
@@ -200,6 +175,19 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             log.info("No changes detected for advertisement ID: {}", id);
         }
         return advertisementMapper.toAdvertisementDetailDto(finalAd);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
+        log.debug("Searching advertisements with criteria: {} and pageable: {}", criteria, pageable);
+
+        Specification<Advertisement> specification = AdvertisementSpecification.fromCriteria(criteria);
+
+        Page<Advertisement> advertisementPage = advertisementRepository.findAll(specification, pageable);
+        log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
+
+        return advertisementMapper.toAdvertisementResponseDtoPage(advertisementPage);
     }
 
 

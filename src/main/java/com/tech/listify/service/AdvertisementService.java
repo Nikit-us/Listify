@@ -1,9 +1,6 @@
 package com.tech.listify.service;
 
-import com.tech.listify.dto.advertisementDto.AdvertisementCreateDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementDetailDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementResponseDto;
-import com.tech.listify.dto.advertisementDto.AdvertisementUpdateDto;
+import com.tech.listify.dto.advertisementDto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,6 +46,15 @@ public interface AdvertisementService {
      * @throws AccessDeniedException если пользователь не является владельцем объявления.
      */
     AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> images, String userEmail);
+
+    /**
+     * Ищет и фильтрует объявления на основе критериев.
+     *
+     * @param criteria DTO с критериями поиска.
+     * @param pageable Параметры пагинации и сортировки.
+     * @return Страница с найденными объявлениями.
+     */
+    Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable);
 
     void deleteAdvertisement(Long id, String userEmail);
 }

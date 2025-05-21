@@ -24,7 +24,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -36,12 +38,13 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final LocalFileStorageServiceImpl localFileStorageService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     @Transactional
-    public UserResponseDto register(UserRegistrationDto registrationDto) {
+    public UserResponseDto register(UserRegistrationDto registrationDto, MultipartFile avatarFile) throws IOException {
         log.info("Attempting to register new user with email: {}", registrationDto.getEmail());
 
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
@@ -60,6 +63,20 @@ public class AuthServiceImpl implements AuthService {
         });
         newUser.setRoles(Set.of(userRole));
         log.debug("Assigned role '{}' to user: {}", RoleType.ROLE_USER, newUser.getEmail());
+
+        if(avatarFile != null && !avatarFile.isEmpty()) {
+            log.debug("Processing avatar for new user: {}", registrationDto.getEmail());
+            try {
+                String avatarUrl = localFileStorageService.saveFile(avatarFile, "avatar");
+                newUser.setAvatarUrl(avatarUrl);
+                log.info("Avatar saved for new user {}. URL: {}", registrationDto.getEmail(), avatarUrl);
+            } catch (IOException e) {
+                log.error("Failed to save avatar for new user {}: {}", registrationDto.getEmail(), e.getMessage(), e);
+                // Решить: откатывать регистрацию или регистрировать без аватара?
+                // Выброс IOException приведет к откату транзакции.
+                throw new IOException("Ошибка при сохранении аватара: " + e.getMessage(), e);
+            }
+        }
 
         User savedUser = userRepository.save(newUser);
         log.info("Successfully registered new user with ID: {} and Email: {}", savedUser.getId(), savedUser.getEmail());

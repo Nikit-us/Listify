@@ -51,6 +51,9 @@ public class User implements UserDetails {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "avatar_url", length = 512)
+    private String avatarUrl;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",

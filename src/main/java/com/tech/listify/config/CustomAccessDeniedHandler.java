@@ -8,38 +8,40 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
 
     @Override
-    public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException authException) throws IOException, ServletException {
+    public void handle(HttpServletRequest request,
+                       HttpServletResponse response,
+                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        log.warn("Unauthorized access attempt on path {}: {}", request.getRequestURI(), authException.getMessage());
+        log.warn("Access Denied for user {} on path {}: {}",
+                request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "anonymous",
+                request.getRequestURI(),
+                accessDeniedException.getMessage());
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value()); // Статус 401
+        response.setStatus(HttpStatus.FORBIDDEN.value()); // Статус 403
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now().toString());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("error", "Unauthorized");
-        body.put("message", "Ошибка аутентификации: требуется действительный токен доступа.");
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Forbidden");
+        body.put("message", "Доступ запрещен: недостаточно прав.");
         body.put("path", request.getRequestURI());
 
         objectMapper.writeValue(response.getOutputStream(), body);
