@@ -28,16 +28,16 @@ public class User implements UserDetails {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, unique = true, length = 50)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false, length = 225)
     private String passwordHash;
 
-    @Column(name = "full_name", nullable = false, length = 255)
+    @Column(name = "full_name", nullable = false, length = 30)
     private String fullName;
 
-    @Column(name = "phone_number", unique = true, length = 50)
+    @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

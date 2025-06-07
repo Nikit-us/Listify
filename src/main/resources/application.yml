@@ -37,5 +37,13 @@ app:
   jwt:
     secret: ${jwt.secret}
     expiration-ms: ${jwt.expiration-ms}
+  cors:
+    allowed-origins:
+      http://localhost:3000, 
+      http://127.0.0.1:3000
 upload:
   path: ./uploads
+  allowed-mime-types:
+    image/jpeg, 
+    image/png, 
+    image/gif

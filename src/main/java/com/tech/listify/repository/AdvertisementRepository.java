@@ -11,5 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AdvertisementRepository extends JpaRepository<Advertisement, Long>, JpaSpecificationExecutor<Advertisement> {
     Page<Advertisement> findByStatus(AdvertisementStatus status, Pageable pageable);
+
     int countBySellerIdAndStatus(Long sellerId, AdvertisementStatus status);
 }

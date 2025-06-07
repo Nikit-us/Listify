@@ -1,7 +1,6 @@
 package com.tech.listify.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +26,14 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                       AccessDeniedException accessDeniedException) throws IOException {
 
         log.warn("Access Denied for user {} on path {}: {}",
                 request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "anonymous",
                 request.getRequestURI(),
                 accessDeniedException.getMessage());
 
-        response.setStatus(HttpStatus.FORBIDDEN.value()); // Статус 403
+        response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         Map<String, Object> body = new LinkedHashMap<>();

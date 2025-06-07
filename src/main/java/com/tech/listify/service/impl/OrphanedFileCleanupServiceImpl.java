@@ -1,5 +1,7 @@
 package com.tech.listify.service.impl;
 
+import com.tech.listify.model.AdvertisementImage;
+import com.tech.listify.model.User;
 import com.tech.listify.repository.AdvertisementImageRepository;
 import com.tech.listify.repository.UserRepository;
 import com.tech.listify.service.FileStorageService;
@@ -46,17 +48,12 @@ public class OrphanedFileCleanupServiceImpl {
             }
             log.debug("Found {} files on disk in the upload directory.", filesOnDisk.size());
 
-
             int deletedCount = 0;
             for (Path filePath : filesOnDisk) {
                 String fileUrl = convertPathToUrl(filePath);
                 if (!knownUrls.contains(fileUrl)) {
-                    try {
-                        Files.delete(filePath);
-                        log.warn("Deleted orphaned file: {}", filePath);
+                    if (deleteSingleOrphanedFile(filePath, fileUrl)) {
                         deletedCount++;
-                    } catch (IOException e) {
-                        log.error("Failed to delete orphaned file: {}", filePath, e);
                     }
                 }
             }
@@ -68,14 +65,30 @@ public class OrphanedFileCleanupServiceImpl {
         }
     }
 
+    /**
+     * Пытается удалить один файл-сироту и логирует результат.
+     *
+     * @return true, если удаление прошло успешно, иначе false.
+     */
+    private boolean deleteSingleOrphanedFile(Path filePath, String fileUrl) {
+        try {
+            fileStorageService.deleteFile(fileUrl);
+            log.warn("Deleted orphaned file via FileStorageService: {}", filePath);
+            return true;
+        } catch (IOException e) {
+            log.error("Failed to delete orphaned file using FileStorageService: {}", filePath, e);
+            return false;
+        }
+    }
+
     private Set<String> getAllKnownUrls() {
         Set<String> avatarUrls = userRepository.findAll().stream()
-                .map(user -> user.getAvatarUrl())
+                .map(User::getAvatarUrl)
                 .filter(url -> url != null && !url.isBlank())
                 .collect(Collectors.toSet());
 
         Set<String> adImageUrls = advertisementImageRepository.findAll().stream()
-                .map(image -> image.getImageUrl())
+                .map(AdvertisementImage::getImageUrl)
                 .filter(url -> url != null && !url.isBlank())
                 .collect(Collectors.toSet());
 
@@ -96,7 +109,7 @@ public class OrphanedFileCleanupServiceImpl {
                     .collect(Collectors.toSet());
         }
     }
-    
+
     private String convertPathToUrl(Path absolutePath) {
         Path rootPath = Paths.get(this.uploadPath).toAbsolutePath().normalize();
         Path relativePath = rootPath.relativize(absolutePath.toAbsolutePath().normalize());

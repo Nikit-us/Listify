@@ -1,5 +1,6 @@
 package com.tech.listify.exception;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,12 +51,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Обработка ошибки: Ошибка хранения/обработки файла (500 Internal Server Error).
+     * Обработка ошибки: Ошибка хранения/обработки файла.
+     * Возвращает 400 Bad Request для ошибок клиента и 500 Internal Server Error для ошибок сервера.
      */
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<Object> handleFileStorageException(FileStorageException ex, WebRequest request) {
-        log.error("File storage error: {}", ex.getMessage(), ex.getCause());
-        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "File Storage Error", ex.getMessage(), request);
+        if (ex.getErrorType() == FileStorageException.ErrorType.CLIENT_ERROR) {
+            log.warn("File storage client error: {}", ex.getMessage());
+            return createErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage(), request);
+        } else {
+            log.error("File storage server error: {}", ex.getMessage(), ex.getCause());
+            return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "File Storage Error", ex.getMessage(), request);
+        }
     }
 
     /**
@@ -70,25 +77,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Ошибка аутентификации: неверные учетные данные", request);
     }
 
-    /**
-     * Обработка ошибки: Доступ запрещен (недостаточно прав) (403 Forbidden).
-     * Примечание: Ошибки 403, генерируемые механизмом авторизации Spring Security (например, @PreAuthorize),
-     * обычно обрабатываются через AccessDeniedHandler. Этот обработчик может ловить AccessDeniedException,
-     * если она была выброшена вручную из кода приложения, ИЛИ если AccessDeniedHandler не настроен.
-     * Рекомендуется использовать AccessDeniedHandler.
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> handleSpringAccessDenied(AccessDeniedException ex, WebRequest request) {
-        log.warn("Access Denied: {}", ex.getMessage());
-        return createErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", "Доступ запрещен: недостаточно прав.", request);
-    }
 
     /**
      * Обработка ошибки: Ошибка валидации аргументов метода (@Valid) (400 Bad Request).
      */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+            MethodArgumentNotValidException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -105,7 +100,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
-            HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+            HttpRequestMethodNotSupportedException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         String message = "Метод " + ex.getMethod() + " не поддерживается для данного ресурса.";
         log.warn("Method Not Allowed on path [{}]: {}", getPath(request), message);
         return createErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed", message, request, headers);
@@ -116,7 +111,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
-            HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+            HttpMediaTypeNotSupportedException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         String message = "Тип контента '" + ex.getContentType() + "' не поддерживается. Поддерживаемые типы: " + ex.getSupportedMediaTypes();
         log.warn("Unsupported Media Type on path [{}]: {}", getPath(request), message);
         return createErrorResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type", message, request, headers);
@@ -128,7 +123,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleNoResourceFoundException(
-            NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request){
+            NoResourceFoundException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         String message = "Ресурс не найден по пути: " + ex.getResourcePath();
         log.warn("No resource found: {}", message);
         return createErrorResponse(HttpStatus.NOT_FOUND, "Not Found", message, request, headers);
@@ -181,7 +176,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (request instanceof ServletWebRequest servletWebRequest) {
             return servletWebRequest.getRequest().getRequestURI();
         }
-        // Возвращаем базовую информацию, если не ServletWebRequest
         return request.getDescription(false).replace("uri=", "");
     }
 }

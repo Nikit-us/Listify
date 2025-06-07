@@ -1,7 +1,7 @@
 package com.tech.listify.repository.specification;
 
 
-import com.tech.listify.dto.advertisementDto.AdvertisementSearchCriteriaDto;
+import com.tech.listify.dto.advertisementdto.AdvertisementSearchCriteriaDto;
 import com.tech.listify.model.Advertisement;
 import com.tech.listify.model.Category;
 import com.tech.listify.model.City;
@@ -17,6 +17,10 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 
 public class AdvertisementSpecification {
+
+    private AdvertisementSpecification() {
+    }
+
     /**
      * Создает спецификацию на основе переданных критериев.
      *

@@ -1,8 +1,9 @@
-package com.tech.listify.dto.advertisementDto;
+package com.tech.listify.dto.advertisementdto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;

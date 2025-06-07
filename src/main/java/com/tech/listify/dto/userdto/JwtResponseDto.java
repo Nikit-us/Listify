@@ -1,4 +1,4 @@
-package com.tech.listify.dto.userDto;
+package com.tech.listify.dto.userdto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;

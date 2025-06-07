@@ -1,18 +1,16 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.advertisementDto.*;
+import com.tech.listify.dto.advertisementdto.*;
 import com.tech.listify.model.Advertisement;
 import com.tech.listify.model.AdvertisementImage;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper(componentModel = "spring")
-public interface AdvertisementMapper { // Убедитесь, что имя файла и класса AdvertisementMapper.java
+public interface AdvertisementMapper {
 
-    // ✨ Игнорируем поля, которые устанавливаются в сервисе
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -23,7 +21,6 @@ public interface AdvertisementMapper { // Убедитесь, что имя фа
     @Mapping(target = "images", ignore = true)
     Advertisement toAdvertisement(AdvertisementCreateDto dto);
 
-    // ✨ Игнорируем системные поля, которые не должны меняться через этот DTO
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -34,10 +31,8 @@ public interface AdvertisementMapper { // Убедитесь, что имя фа
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateAdvertisementFromDto(AdvertisementUpdateDto dto, @MappingTarget Advertisement ad);
 
-    // ✨ НАШ ИСПРАВЛЕННЫЙ МЕТОД
     @Mapping(source = "city.id", target = "cityId")
     @Mapping(source = "city.name", target = "cityName")
-    // Говорим MapStruct: для поля 'previewImageUrl' вызови наш хелпер-метод 'mapPreviewImageUrl'
     @Mapping(target = "previewImageUrl", expression = "java(mapPreviewImageUrl(ad))")
     AdvertisementResponseDto toAdvertisementResponseDto(Advertisement ad);
 

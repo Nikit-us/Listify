@@ -1,4 +1,4 @@
-package com.tech.listify.dto.categoryDto;
+package com.tech.listify.dto.categorydto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

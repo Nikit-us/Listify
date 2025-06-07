@@ -1,9 +1,9 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.userDto.JwtResponseDto;
-import com.tech.listify.dto.userDto.LoginRequestDto;
-import com.tech.listify.dto.userDto.UserRegistrationDto;
-import com.tech.listify.dto.userDto.UserResponseDto;
+import com.tech.listify.dto.userdto.JwtResponseDto;
+import com.tech.listify.dto.userdto.LoginRequestDto;
+import com.tech.listify.dto.userdto.UserRegistrationDto;
+import com.tech.listify.dto.userdto.UserResponseDto;
 import com.tech.listify.exception.UserAlreadyExistsException;
 import com.tech.listify.mapper.UserMapper;
 import com.tech.listify.model.Role;
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         newUser.setRoles(Set.of(userRole));
         log.debug("Assigned role '{}' to user: {}", RoleType.ROLE_USER, newUser.getEmail());
 
-        if(avatarFile != null && !avatarFile.isEmpty()) {
+        if (avatarFile != null && !avatarFile.isEmpty()) {
             log.debug("Processing avatar for new user: {}", registrationDto.email());
             try {
                 String avatarUrl = localFileStorageService.saveFile(avatarFile, "avatar");
@@ -74,7 +74,6 @@ public class AuthServiceImpl implements AuthService {
             } catch (IOException e) {
                 log.error("Failed to save avatar for new user {}: {}", registrationDto.email(), e.getMessage(), e);
                 // Решить: откатывать регистрацию или регистрировать без аватара?
-                // Выброс IOException приведет к откату транзакции.
                 throw new IOException("Ошибка при сохранении аватара: " + e.getMessage(), e);
             }
         }

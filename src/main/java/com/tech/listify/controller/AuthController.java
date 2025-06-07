@@ -1,9 +1,9 @@
 package com.tech.listify.controller;
 
-import com.tech.listify.dto.userDto.JwtResponseDto;
-import com.tech.listify.dto.userDto.LoginRequestDto;
-import com.tech.listify.dto.userDto.UserRegistrationDto;
-import com.tech.listify.dto.userDto.UserResponseDto;
+import com.tech.listify.dto.userdto.JwtResponseDto;
+import com.tech.listify.dto.userdto.LoginRequestDto;
+import com.tech.listify.dto.userdto.UserRegistrationDto;
+import com.tech.listify.dto.userdto.UserResponseDto;
 import com.tech.listify.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

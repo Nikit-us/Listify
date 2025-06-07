@@ -1,6 +1,6 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.advertisementDto.*;
+import com.tech.listify.dto.advertisementdto.*;
 import com.tech.listify.exception.FileStorageException;
 import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.AdvertisementMapper;
@@ -16,11 +16,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.tech.listify.exception.AccessDeniedException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.tech.listify.exception.FileStorageException.ErrorType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -96,7 +97,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         // Проверка прав доступа
         if (!advertisement.getSeller().getEmail().equals(userEmail)) {
             log.warn("Access denied for user {} to delete advertisement ID {}", userEmail, id);
-            throw new com.tech.listify.exception.AccessDeniedException("Вы не можете удалять это объявление.");
+            throw new AccessDeniedException("Вы не можете удалять это объявление.");
         }
 
         // Удаляем само объявление
@@ -135,24 +136,24 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             update = true;
         }
 
-        if(updateDto.categoryId() != null) {
+        if (updateDto.categoryId() != null) {
             Category category = categoryService.findCategoryById(updateDto.categoryId());
             ad.setCategory(category);
             update = true;
         }
 
-        if(updateDto.cityId() != null) {
+        if (updateDto.cityId() != null) {
             City city = cityService.findCityById(updateDto.cityId());
             ad.setCity(city);
             update = true;
         }
 
-        if(updateDto.status() != null) {
+        if (updateDto.status() != null) {
             ad.setStatus(updateDto.status());
             update = true;
         }
 
-        if(newImageFiles != null && !newImageFiles.isEmpty()) {
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
             log.debug("Replacing images for advertisement ID: {}", id);
             ad.getImages().clear();
             List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImageFiles, ad);
@@ -168,8 +169,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         Advertisement finalAd = update ? advertisementRepository.save(ad) : ad;
         if (update) {
             log.info("Successfully updated advertisement with ID: {}", finalAd.getId());
-        }
-        else {
+        } else {
             log.info("No changes detected for advertisement ID: {}", id);
         }
         return advertisementMapper.toAdvertisementDetailDto(finalAd);
@@ -209,33 +209,10 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 } catch (IOException e) {
                     log.error("Failed to store image {} for ad {}: {}", imageFile.getOriginalFilename(), advertisement.getId(), e.getMessage());
                     // Выбрасываем исключение, чтобы откатить транзакцию
-                    throw new FileStorageException("Ошибка при сохранении изображения: " + imageFile.getOriginalFilename(), e);
+                    throw new FileStorageException("Ошибка при сохранении изображения: " + imageFile.getOriginalFilename(), e, ErrorType.SERVER_ERROR);
                 }
             }
         }
         return savedImages;
-    }
-
-    private void deleteExistingImages(Advertisement advertisement) {
-        // Копируем список URL перед удалением сущностей, чтобы знать, какие файлы удалять
-        List<String> urlsToDelete = advertisement.getImages().stream()
-                .map(AdvertisementImage::getImageUrl)
-                .toList();
-
-        // Удаляем сущности из БД (orphanRemoval=true должен сработать при очистке коллекции)
-        // Или удаляем явно через репозиторий
-        advertisementImageRepository.deleteAll(advertisement.getImages()); // Явное удаление
-        advertisement.getImages().clear(); // Очищаем коллекцию
-        advertisementRepository.flush(); // Принудительно синхронизируем с БД
-
-        // Удаляем файлы из хранилища
-        for (String url : urlsToDelete) {
-            try {
-                fileStorageService.deleteFile(url);
-            } catch (IOException e) {
-                log.error("Failed to delete image file {}: {}", url, e.getMessage());
-                // Решить: проигнорировать? или Выбросить исключение?
-            }
-        }
     }
 }

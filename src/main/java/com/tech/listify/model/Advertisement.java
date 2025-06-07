@@ -26,7 +26,7 @@ public class Advertisement {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = false, length = 25)
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -65,14 +65,4 @@ public class Advertisement {
 
     @OneToMany(mappedBy = "advertisement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AdvertisementImage> images = new ArrayList<>();
-
-    public void addImage(AdvertisementImage image) {
-        images.add(image);
-        image.setAdvertisement(this);
-    }
-
-    public void removeImage(AdvertisementImage image) {
-        images.remove(image);
-        image.setAdvertisement(null);
-    }
 }

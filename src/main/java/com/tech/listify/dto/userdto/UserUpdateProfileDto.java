@@ -1,4 +1,4 @@
-package com.tech.listify.dto.userDto;
+package com.tech.listify.dto.userdto;
 
 import jakarta.validation.constraints.Size;
 

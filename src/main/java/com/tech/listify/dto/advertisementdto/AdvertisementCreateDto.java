@@ -1,14 +1,15 @@
-package com.tech.listify.dto.advertisementDto;
+package com.tech.listify.dto.advertisementdto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 
 @Schema(description = "Данные для создания нового объявления")
 public record AdvertisementCreateDto(
         @NotBlank(message = "Заголовок не может быть пустым")
-        @Size(min = 5, max = 50,  message = "Заголовок должен содержать от 5 до 50 символов")
+        @Size(min = 5, max = 50, message = "Заголовок должен содержать от 5 до 50 символов")
         @Schema(description = "Заголовок объявления", example = "Продам ноутбук", requiredMode = Schema.RequiredMode.REQUIRED)
         String title,
 
@@ -18,7 +19,7 @@ public record AdvertisementCreateDto(
 
         @NotNull(message = "Цена не должна быть пустой")
         @PositiveOrZero(message = "Цена должна быть положительной или нулевой")
-        @Digits(integer=10, fraction=2, message = "Некорректный формат цены (максимум 10 цифр до точки, 2 после)")
+        @Digits(integer = 10, fraction = 2, message = "Некорректный формат цены (максимум 10 цифр до точки, 2 после)")
         @Schema(description = "Цена объявления", example = "550.99", requiredMode = Schema.RequiredMode.REQUIRED)
         BigDecimal price,
 

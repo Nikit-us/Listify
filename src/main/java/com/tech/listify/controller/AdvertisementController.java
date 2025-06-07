@@ -1,6 +1,6 @@
 package com.tech.listify.controller;
 
-import com.tech.listify.dto.advertisementDto.*;
+import com.tech.listify.dto.advertisementdto.*;
 import com.tech.listify.service.AdvertisementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

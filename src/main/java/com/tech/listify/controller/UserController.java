@@ -1,10 +1,7 @@
 package com.tech.listify.controller;
 
-import com.tech.listify.dto.userDto.UserProfileDto;
-import com.tech.listify.dto.userDto.UserResponseDto;
-import com.tech.listify.dto.userDto.UserUpdateProfileDto;
-import com.tech.listify.exception.ResourceNotFoundException;
-import com.tech.listify.model.User;
+import com.tech.listify.dto.userdto.UserProfileDto;
+import com.tech.listify.dto.userdto.UserUpdateProfileDto;
 import com.tech.listify.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -43,7 +39,7 @@ public class UserController {
                             schema = @Schema(implementation = UserProfileDto.class))),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден", content = @Content(schema = @Schema(implementation = Map.class)))
     })
-    @GetMapping("/{userId}/profile")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserProfileDto> getProfile(@Parameter(description = "ID пользователя", required = true, example = "1") @PathVariable Long userId) {
         log.debug("Received request for user profile ID: {}", userId);
         UserProfileDto userProfile = userService.getUserProfileById(userId);
@@ -53,8 +49,8 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileDto> getCurrentUserProfile(Authentication authentication) {
         String userEmail = authentication.getName();
-        log.info("Received request to update profile for user: {}", userEmail);
-        UserProfileDto userProfileDto= userService.getCurrentUserProfile(userEmail);
+        log.info("Get current profile: {}", userEmail);
+        UserProfileDto userProfileDto = userService.getCurrentUserProfile(userEmail);
         return ResponseEntity.ok(userProfileDto);
     }
 

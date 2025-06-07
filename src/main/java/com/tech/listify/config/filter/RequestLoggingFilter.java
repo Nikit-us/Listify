@@ -13,9 +13,6 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -79,19 +76,5 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         } catch (UnsupportedEncodingException ex) {
             return "[unknown encoding]";
         }
-    }
-
-    private Map<String, String> getHeaders(HttpServletRequest request) {
-        Map<String, String> headers = new HashMap<>();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            if (!"authorization".equalsIgnoreCase(headerName)) {
-                 headers.put(headerName, request.getHeader(headerName));
-            } else {
-                 headers.put(headerName, "*******");
-            }
-        }
-        return headers;
     }
 }

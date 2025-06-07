@@ -1,11 +1,24 @@
 package com.tech.listify.exception;
 
+import lombok.Getter;
+
+@Getter
 public class FileStorageException extends RuntimeException {
-    public FileStorageException(String message) {
-        super(message);
+
+    public enum ErrorType {
+        CLIENT_ERROR,
+        SERVER_ERROR
     }
 
-    public FileStorageException(String message, Throwable cause) {
+    private final ErrorType errorType;
+
+    public FileStorageException(String message, ErrorType errorType) {
+        super(message);
+        this.errorType = errorType;
+    }
+
+    public FileStorageException(String message, Throwable cause, ErrorType errorType) {
         super(message, cause);
+        this.errorType = errorType;
     }
 }

@@ -1,7 +1,8 @@
-package com.tech.listify.dto.advertisementDto;
+package com.tech.listify.dto.advertisementdto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
 @Schema(description = "Критерии для поиска и фильтрации объявлений")

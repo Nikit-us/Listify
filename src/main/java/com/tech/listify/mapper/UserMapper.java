@@ -1,8 +1,8 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.userDto.UserProfileDto;
-import com.tech.listify.dto.userDto.UserRegistrationDto;
-import com.tech.listify.dto.userDto.UserResponseDto;
+import com.tech.listify.dto.userdto.UserProfileDto;
+import com.tech.listify.dto.userdto.UserRegistrationDto;
+import com.tech.listify.dto.userdto.UserResponseDto;
 import com.tech.listify.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

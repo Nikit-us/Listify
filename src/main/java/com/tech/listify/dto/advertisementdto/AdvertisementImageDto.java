@@ -1,4 +1,4 @@
-package com.tech.listify.dto.advertisementDto;
+package com.tech.listify.dto.advertisementdto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

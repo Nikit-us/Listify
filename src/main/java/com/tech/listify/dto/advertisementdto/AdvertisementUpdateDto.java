@@ -1,10 +1,11 @@
-package com.tech.listify.dto.advertisementDto;
+package com.tech.listify.dto.advertisementdto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public record AdvertisementUpdateDto(
@@ -15,7 +16,7 @@ public record AdvertisementUpdateDto(
         String description,
 
         @PositiveOrZero(message = "Цена должна быть положительной или нулевой")
-        @Digits(integer=10, fraction=2, message = "Некорректный формат цены (максимум 10 цифр до точки, 2 после)")
+        @Digits(integer = 10, fraction = 2, message = "Некорректный формат цены (максимум 10 цифр до точки, 2 после)")
         BigDecimal price,
 
         Integer categoryId,

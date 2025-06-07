@@ -1,6 +1,7 @@
 package com.tech.listify.controller;
 
-import com.tech.listify.dto.categoryDto.CategoryDto;
+import com.tech.listify.dto.categorydto.CategoryCreateDto;
+import com.tech.listify.dto.categorydto.CategoryDto;
 import com.tech.listify.mapper.CategoryMapper;
 import com.tech.listify.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,15 +11,16 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -48,8 +50,8 @@ public class CategoryController {
     @Operation(summary = "Получить категорию по ID", description = "Возвращает информацию о конкретной категории.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Категория найдена",
-                         content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = CategoryDto.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = CategoryDto.class))),
             @ApiResponse(responseCode = "404", description = "Категория не найдена", content = @Content(schema = @Schema(implementation = Map.class)))
     })
     @GetMapping("/{id}")
@@ -58,5 +60,22 @@ public class CategoryController {
         log.debug("Request to get category by ID: {}", id);
         CategoryDto category = categoryMapper.toDto(categoryService.findCategoryById(id));
         return ResponseEntity.ok(category);
+    }
+
+    @Operation(summary = "Создать одну или несколько категорий (только для ADMIN)", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Категории успешно созданы"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Родительская категория не найдена"),
+            @ApiResponse(responseCode = "409", description = "Категория уже существует")
+    })
+    @PostMapping
+    public ResponseEntity<List<CategoryDto>> createCategories(@Valid @RequestBody List<CategoryCreateDto> createDtos) {
+        if (createDtos == null || createDtos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Список для создания не может быть пустым.");
+        }
+        List<CategoryDto> createdCategories = categoryService.createCategories(createDtos);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdCategories);
     }
 }

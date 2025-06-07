@@ -1,7 +1,7 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.userDto.UserProfileDto;
-import com.tech.listify.dto.userDto.UserUpdateProfileDto;
+import com.tech.listify.dto.userdto.UserProfileDto;
+import com.tech.listify.dto.userdto.UserUpdateProfileDto;
 import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.UserMapper;
 import com.tech.listify.model.City;
@@ -14,7 +14,6 @@ import com.tech.listify.service.FileStorageService;
 import com.tech.listify.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,50 +36,22 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserProfileDto getUserProfileById(Long userId) {
         log.debug("Fetching user profile for ID: {}", userId);
-        User user = userRepository.findById(userId).orElseThrow(() ->  new ResourceNotFoundException("Пользователь с ID " + userId + " не найден."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + userId + " не найден."));
         int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
         return userMapper.toUserProfileDto(user, activeAdsCount);
     }
 
     @Override
+    @Transactional
     public UserProfileDto updateUserProfile(String userEmail, UserUpdateProfileDto updateDto, MultipartFile avatarFile) throws IOException {
         log.info("Attempting to update profile for user: {}", userEmail);
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь с email " + userEmail + " не найден."));
 
-        boolean profileDataUpdated = false;
+        boolean isProfileUpdated = updateProfileData(user, updateDto);
+        boolean isAvatarUpdated = updateAvatar(user, avatarFile);
 
-        if(updateDto != null) {
-            if (updateDto.fullName() != null && !updateDto.fullName().isBlank()) {
-                user.setFullName(updateDto.fullName());
-                profileDataUpdated = true;
-            }
-            if (updateDto.phoneNumber() != null) {
-                user.setPhoneNumber(updateDto.phoneNumber().isBlank() ? null : updateDto.phoneNumber());
-                profileDataUpdated = true;
-            }
-            if (updateDto.cityId() != null) {
-                if (updateDto.cityId() <= 0) {
-                    user.setCity(null);
-                } else {
-                    City city = cityService.findCityById(updateDto.cityId());
-                    user.setCity(city);
-                }
-                profileDataUpdated = true;
-            }
-        }
-
-
-        if (avatarFile != null && !avatarFile.isEmpty()) {
-            log.debug("Processing new avatar for user: {}", userEmail);
-
-            String newAvatarUrl = fileStorageService.saveFile(avatarFile, "avatar");
-            user.setAvatarUrl(newAvatarUrl);
-            log.info("New avatar uploaded for user {}. URL: {}", userEmail, newAvatarUrl);
-            profileDataUpdated = true;
-        }
-
-        if (profileDataUpdated) {
+        if (isProfileUpdated || isAvatarUpdated) {
             userRepository.save(user);
             log.info("Profile updated for user: {}", userEmail);
         } else {
@@ -90,6 +61,45 @@ public class UserServiceImpl implements UserService {
         int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
         return userMapper.toUserProfileDto(user, activeAdsCount);
     }
+
+    private boolean updateProfileData(User user, UserUpdateProfileDto updateDto) {
+        if (updateDto == null) {
+            return false;
+        }
+        boolean updated = false;
+
+        if (updateDto.fullName() != null && !updateDto.fullName().isBlank()) {
+            user.setFullName(updateDto.fullName());
+            updated = true;
+        }
+        if (updateDto.phoneNumber() != null) {
+            user.setPhoneNumber(updateDto.phoneNumber().isBlank() ? null : updateDto.phoneNumber());
+            updated = true;
+        }
+        if (updateDto.cityId() != null) {
+            if (updateDto.cityId() <= 0) {
+                user.setCity(null);
+            } else {
+                City city = cityService.findCityById(updateDto.cityId());
+                user.setCity(city);
+            }
+            updated = true;
+        }
+        return updated;
+    }
+
+    private boolean updateAvatar(User user, MultipartFile avatarFile) throws IOException {
+        if (avatarFile == null || avatarFile.isEmpty()) {
+            return false;
+        }
+        log.debug("Processing new avatar for user: {}", user.getEmail());
+        // Старый аватар удалится фоновым процессом очистки
+        String newAvatarUrl = fileStorageService.saveFile(avatarFile, "avatar");
+        user.setAvatarUrl(newAvatarUrl);
+        log.info("New avatar uploaded for user {}. URL: {}", user.getEmail(), newAvatarUrl);
+        return true;
+    }
+
 
     @Override
     public UserProfileDto getCurrentUserProfile(String userEmail) {
@@ -102,5 +112,4 @@ public class UserServiceImpl implements UserService {
         int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
         return userMapper.toUserProfileDto(user, activeAdsCount);
     }
-
 }

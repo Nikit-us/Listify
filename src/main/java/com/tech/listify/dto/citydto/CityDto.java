@@ -1,4 +1,4 @@
-package com.tech.listify.dto.cityDto;
+package com.tech.listify.dto.citydto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
