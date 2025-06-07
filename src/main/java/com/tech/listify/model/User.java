@@ -54,7 +54,7 @@ public class User implements UserDetails {
     @Column(name = "avatar_url", length = 512)
     private String avatarUrl;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

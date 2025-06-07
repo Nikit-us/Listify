@@ -1,9 +1,13 @@
 package com.tech.listify.dto.cityDto;
 
-import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Data
-public class CityDto {
-    private Integer id;
-    private String name;
+@Schema(description = "Информация о городе")
+public record CityDto(
+        @Schema(description = "ID города")
+        Integer id,
+
+        @Schema(description = "Название города")
+        String name
+) {
 }

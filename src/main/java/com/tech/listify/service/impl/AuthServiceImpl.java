@@ -13,6 +13,7 @@ import com.tech.listify.repository.RoleRepository;
 import com.tech.listify.repository.UserRepository;
 import com.tech.listify.service.AuthService;
 import com.tech.listify.security.jwt.JwtTokenProvider;
+import com.tech.listify.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,23 +39,23 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final LocalFileStorageServiceImpl localFileStorageService;
+    private final FileStorageService localFileStorageService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     @Transactional
     public UserResponseDto register(UserRegistrationDto registrationDto, MultipartFile avatarFile) throws IOException {
-        log.info("Attempting to register new user with email: {}", registrationDto.getEmail());
+        log.info("Attempting to register new user with email: {}", registrationDto.email());
 
-        if (userRepository.existsByEmail(registrationDto.getEmail())) {
-            log.warn("Registration failed: Email {} already exists.", registrationDto.getEmail());
-            throw new UserAlreadyExistsException("Пользователь с email '" + registrationDto.getEmail() + "' уже существует.");
+        if (userRepository.existsByEmail(registrationDto.email())) {
+            log.warn("Registration failed: Email {} already exists.", registrationDto.email());
+            throw new UserAlreadyExistsException("Пользователь с email '" + registrationDto.email() + "' уже существует.");
         }
 
         User newUser = userMapper.toUser(registrationDto);
 
-        newUser.setPasswordHash(passwordEncoder.encode(registrationDto.getPassword()));
+        newUser.setPasswordHash(passwordEncoder.encode(registrationDto.password()));
         log.debug("Password encoded for user: {}", newUser.getEmail());
 
         Role userRole = roleRepository.findByName(RoleType.ROLE_USER).orElseThrow(() -> {
@@ -65,13 +66,13 @@ public class AuthServiceImpl implements AuthService {
         log.debug("Assigned role '{}' to user: {}", RoleType.ROLE_USER, newUser.getEmail());
 
         if(avatarFile != null && !avatarFile.isEmpty()) {
-            log.debug("Processing avatar for new user: {}", registrationDto.getEmail());
+            log.debug("Processing avatar for new user: {}", registrationDto.email());
             try {
                 String avatarUrl = localFileStorageService.saveFile(avatarFile, "avatar");
                 newUser.setAvatarUrl(avatarUrl);
-                log.info("Avatar saved for new user {}. URL: {}", registrationDto.getEmail(), avatarUrl);
+                log.info("Avatar saved for new user {}. URL: {}", registrationDto.email(), avatarUrl);
             } catch (IOException e) {
-                log.error("Failed to save avatar for new user {}: {}", registrationDto.getEmail(), e.getMessage(), e);
+                log.error("Failed to save avatar for new user {}: {}", registrationDto.email(), e.getMessage(), e);
                 // Решить: откатывать регистрацию или регистрировать без аватара?
                 // Выброс IOException приведет к откату транзакции.
                 throw new IOException("Ошибка при сохранении аватара: " + e.getMessage(), e);
@@ -85,30 +86,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public JwtResponseDto login(LoginRequestDto loginRequestDto) {
-        log.info("Attempting login for user: {}", loginRequestDto.getEmail());
+        log.info("Attempting login for user: {}", loginRequestDto.email());
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequestDto.getEmail(),
-                        loginRequestDto.getPassword()
+                        loginRequestDto.email(),
+                        loginRequestDto.password()
                 )
         );
 
-        log.debug("Authentication successful for user: {}", loginRequestDto.getEmail());
+        log.debug("Authentication successful for user: {}", loginRequestDto.email());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwtToken = jwtTokenProvider.generateToken(authentication);
-        log.debug("JWT token generated for user: {}", loginRequestDto.getEmail());
+        log.debug("JWT token generated for user: {}", loginRequestDto.email());
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(
+        User user = userRepository.findByEmailWithRoles(userDetails.getUsername()).orElseThrow(
                 () -> new IllegalStateException("Authenticated user not found in database - data inconsistency")
         );
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-        return new JwtResponseDto(jwtToken, user.getId(), user.getEmail(), roles);
+        return new JwtResponseDto(jwtToken, "Bearer", user.getId(), user.getEmail(), roles);
     }
 }

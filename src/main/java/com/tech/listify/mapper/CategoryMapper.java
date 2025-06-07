@@ -1,10 +1,10 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.categoryDto.CategoryCreateDto;
 import com.tech.listify.dto.categoryDto.CategoryDto;
 import com.tech.listify.model.Category;
+import org.mapstruct.Mapper;
 
+@Mapper(componentModel = "spring")
 public interface CategoryMapper {
-    Category toEntity(CategoryCreateDto dto);
     CategoryDto toDto(Category entity);
 }

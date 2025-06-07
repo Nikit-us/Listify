@@ -3,7 +3,7 @@ package com.tech.listify.service.impl;
 import com.tech.listify.dto.advertisementDto.*;
 import com.tech.listify.exception.FileStorageException;
 import com.tech.listify.exception.ResourceNotFoundException;
-import com.tech.listify.mapper.impl.AdvertisementMapperImpl;
+import com.tech.listify.mapper.AdvertisementMapper;
 import com.tech.listify.model.*;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import com.tech.listify.repository.*;
@@ -35,22 +35,22 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final UserRepository userRepository;
     private final CategoryService categoryService;
     private final CityService cityService;
-    private final AdvertisementMapperImpl advertisementMapper;
+    private final AdvertisementMapper advertisementMapper;
     private final AdvertisementImageRepository advertisementImageRepository;
     private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
     public AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, List<MultipartFile> images, String sellerEmail) {
-        log.info("Creating new advertisement '{}' for user {}", createDto.getTitle(), sellerEmail);
+        log.info("Creating new advertisement '{}' for user {}", createDto.title(), sellerEmail);
         User seller = userRepository.findByEmail(sellerEmail).orElseThrow(() -> {
             log.error("Attempt to create advertisement for non-existent user: {}", sellerEmail);
             return new ResourceNotFoundException("Пользователь с email '" + sellerEmail + "' не найден.");
         });
 
-        Category category = categoryService.findCategoryById(createDto.getCategoryId());
+        Category category = categoryService.findCategoryById(createDto.categoryId());
 
-        City city = cityService.findCityById(createDto.getCityId());
+        City city = cityService.findCityById(createDto.cityId());
         Advertisement newAd = advertisementMapper.toAdvertisement(createDto);
 
         newAd.setSeller(seller);
@@ -99,9 +99,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             throw new com.tech.listify.exception.AccessDeniedException("Вы не можете удалять это объявление.");
         }
 
-        // Удаляем связанные файлы и записи из БД
-        deleteExistingImages(advertisement);
-
         // Удаляем само объявление
         advertisementRepository.delete(advertisement);
         log.info("Successfully deleted advertisement with ID: {}", id);
@@ -121,49 +118,50 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         boolean update = false;
 
-        if (updateDto.getTitle() != null) {
-            ad.setTitle(updateDto.getTitle());
+        if (updateDto.title() != null) {
+            ad.setTitle(updateDto.title());
             update = true;
         }
-        if (updateDto.getDescription() != null) {
-            ad.setDescription(updateDto.getDescription());
+        if (updateDto.description() != null) {
+            ad.setDescription(updateDto.description());
             update = true;
         }
-        if (updateDto.getPrice() != null) {
-            ad.setPrice(updateDto.getPrice());
+        if (updateDto.price() != null) {
+            ad.setPrice(updateDto.price());
             update = true;
         }
-        if (updateDto.getCondition() != null) {
-            ad.setCondition(updateDto.getCondition());
+        if (updateDto.condition() != null) {
+            ad.setCondition(updateDto.condition());
             update = true;
         }
 
-        if(updateDto.getCategoryId() != null) {
-            Category category = categoryService.findCategoryById(updateDto.getCategoryId());
+        if(updateDto.categoryId() != null) {
+            Category category = categoryService.findCategoryById(updateDto.categoryId());
             ad.setCategory(category);
             update = true;
         }
 
-        if(updateDto.getCityId() != null) {
-            City city = cityService.findCityById(updateDto.getCityId());
+        if(updateDto.cityId() != null) {
+            City city = cityService.findCityById(updateDto.cityId());
             ad.setCity(city);
             update = true;
         }
 
-        if(updateDto.getStatus() != null) {
-            ad.setStatus(updateDto.getStatus());
+        if(updateDto.status() != null) {
+            ad.setStatus(updateDto.status());
             update = true;
         }
 
         if(newImageFiles != null && !newImageFiles.isEmpty()) {
             log.debug("Replacing images for advertisement ID: {}", id);
-            deleteExistingImages(ad);
+            ad.getImages().clear();
             List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImageFiles, ad);
             ad.setImages(savedImageEntities);
             update = true;
-        } else if (newImageFiles != null && newImageFiles.isEmpty()) {
+        } else if (newImageFiles != null) {
             log.debug("Removing all images for advertisement ID: {}", id);
-            deleteExistingImages(ad);
+            // подумать над удалением файлов
+            ad.getImages().clear();
             update = true;
         }
 

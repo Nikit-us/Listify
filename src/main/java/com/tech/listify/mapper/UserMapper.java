@@ -4,25 +4,25 @@ import com.tech.listify.dto.userDto.UserProfileDto;
 import com.tech.listify.dto.userDto.UserRegistrationDto;
 import com.tech.listify.dto.userDto.UserResponseDto;
 import com.tech.listify.model.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
+@Mapper(componentModel = "spring")
 public interface UserMapper {
-    /**
-     * Преобразует DTO регистрации в сущность User.
-     * Пароль не копируется напрямую, его нужно будет хешировать в сервисе.
-     * Роли и город не устанавливаются здесь.
-     *
-     * @param dto DTO с данными для регистрации.
-     * @return Сущность User, готовую к дальнейшей обработке (установка пароля, ролей).
-     */
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "passwordHash", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "registeredAt", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "avatarUrl", ignore = true)
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "advertisements", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
     User toUser(UserRegistrationDto dto);
 
-    /**
-     * Преобразует сущность User в DTO для ответа.
-     *
-     * @param user сущность с бд.
-     * @return DTO ответа.
-     */
     UserResponseDto toUserResponseDto(User user);
 
+    @Mapping(source = "user.city.id", target = "cityId")
     UserProfileDto toUserProfileDto(User user, Integer totalActiveAds);
 }

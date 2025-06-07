@@ -51,7 +51,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestPart("user") @Schema(description = "Данные для регистрации пользователя в формате JSON") UserRegistrationDto registrationDto,
                                                     @RequestPart(value = "avatar", required = false) @Schema(description = "Файл аватара пользователя (опционально)") MultipartFile avatarFile) throws IOException {
-        log.info("Received registration request for email: {}", registrationDto.getEmail());
+        log.info("Received registration request for email: {}", registrationDto.email());
         UserResponseDto responseDto = authService.register(registrationDto, avatarFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -71,9 +71,9 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDto> login(@Valid @RequestBody @Schema(description = "Учетные данные для входа в систему") LoginRequestDto loginRequestDto) {
-        log.info("Received login request for email: {}", loginRequestDto.getEmail());
+        log.info("Received login request for email: {}", loginRequestDto.email());
         JwtResponseDto jwtResponseDto = authService.login(loginRequestDto);
-        log.info("Login successful for email: {}", loginRequestDto.getEmail());
+        log.info("Login successful for email: {}", loginRequestDto.email());
         return ResponseEntity.ok(jwtResponseDto);
     }
 }

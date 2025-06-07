@@ -51,19 +51,19 @@ public class UserServiceImpl implements UserService {
         boolean profileDataUpdated = false;
 
         if(updateDto != null) {
-            if (updateDto.getFullName() != null && !updateDto.getFullName().isBlank()) {
-                user.setFullName(updateDto.getFullName());
+            if (updateDto.fullName() != null && !updateDto.fullName().isBlank()) {
+                user.setFullName(updateDto.fullName());
                 profileDataUpdated = true;
             }
-            if (updateDto.getPhoneNumber() != null) {
-                user.setPhoneNumber(updateDto.getPhoneNumber().isBlank() ? null : updateDto.getPhoneNumber());
+            if (updateDto.phoneNumber() != null) {
+                user.setPhoneNumber(updateDto.phoneNumber().isBlank() ? null : updateDto.phoneNumber());
                 profileDataUpdated = true;
             }
-            if (updateDto.getCityId() != null) {
-                if (updateDto.getCityId() <= 0) {
+            if (updateDto.cityId() != null) {
+                if (updateDto.cityId() <= 0) {
                     user.setCity(null);
                 } else {
-                    City city = cityService.findCityById(updateDto.getCityId());
+                    City city = cityService.findCityById(updateDto.cityId());
                     user.setCity(city);
                 }
                 profileDataUpdated = true;
@@ -73,14 +73,7 @@ public class UserServiceImpl implements UserService {
 
         if (avatarFile != null && !avatarFile.isEmpty()) {
             log.debug("Processing new avatar for user: {}", userEmail);
-            if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {
-                try {
-                    fileStorageService.deleteFile(user.getAvatarUrl());
-                    log.debug("Old avatar file deleted: {}", user.getAvatarUrl());
-                } catch (IOException e) {
-                    log.warn("Could not delete old avatar file {}: {}", user.getAvatarUrl(), e.getMessage());
-                }
-            }
+
             String newAvatarUrl = fileStorageService.saveFile(avatarFile, "avatar");
             user.setAvatarUrl(newAvatarUrl);
             log.info("New avatar uploaded for user {}. URL: {}", userEmail, newAvatarUrl);

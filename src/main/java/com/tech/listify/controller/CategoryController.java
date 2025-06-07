@@ -2,7 +2,6 @@ package com.tech.listify.controller;
 
 import com.tech.listify.dto.categoryDto.CategoryDto;
 import com.tech.listify.mapper.CategoryMapper;
-import com.tech.listify.mapper.impl.CategoryMapperImpl;
 import com.tech.listify.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +31,7 @@ import java.util.Map;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final CategoryMapperImpl categoryMapper;
+    private final CategoryMapper categoryMapper;
 
     @Operation(summary = "Получить список всех категорий",
             description = "Возвращает полный список доступных категорий объявлений. Доступно всем.")

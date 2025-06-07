@@ -1,10 +1,16 @@
 package com.tech.listify.dto.advertisementDto;
 
-import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Data
-public class AdvertisementImageDto {
-    private Long id;
-    private String imageUrl;
-    private boolean isPreview;
+@Schema(description = "Информация об изображении объявления")
+public record AdvertisementImageDto(
+        @Schema(description = "ID изображения")
+        Long id,
+
+        @Schema(description = "URL изображения")
+        String imageUrl,
+
+        @Schema(description = "Является ли изображение превью")
+        boolean isPreview
+) {
 }

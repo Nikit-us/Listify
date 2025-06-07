@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.debug("Attempting to load user by email {}", email);
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> {
                     log.warn("User not found with email: {}", email);
                     return new UsernameNotFoundException("Пользователь с email '" + email + "' не найден.");

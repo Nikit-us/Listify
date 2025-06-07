@@ -2,31 +2,56 @@ package com.tech.listify.dto.advertisementDto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import com.tech.listify.model.enums.AdvertisementStatus;
-import lombok.Data;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@Data
-public class AdvertisementDetailDto {
-    private Long id;
-    private String title;
-    private String description;
-    private BigDecimal price;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
-    private AdvertisementStatus status;
-    private AdvertisementCondition condition;
+@Schema(description = "Полная информация об объявлении")
+public record AdvertisementDetailDto(
+        @Schema(description = "ID объявления")
+        Long id,
 
-    private Integer categoryId;
-    private String categoryName;
+        @Schema(description = "Заголовок")
+        String title,
 
-    private Integer cityId;
-    private String cityName;
+        @Schema(description = "Описание")
+        String description,
 
-    private Long sellerId;
-    private String sellerName;
+        @Schema(description = "Цена")
+        BigDecimal price,
 
-    private List<AdvertisementImageDto> images;
+        @Schema(description = "Дата создания")
+        OffsetDateTime createdAt,
+
+        @Schema(description = "Дата последнего обновления")
+        OffsetDateTime updatedAt,
+
+        @Schema(description = "Статус (активно, продано и т.д.)")
+        AdvertisementStatus status,
+
+        @Schema(description = "Состояние (новое, б/у)")
+        AdvertisementCondition condition,
+
+        @Schema(description = "ID категории")
+        Integer categoryId,
+
+        @Schema(description = "Название категории")
+        String categoryName,
+
+        @Schema(description = "ID города")
+        Integer cityId,
+
+        @Schema(description = "Название города")
+        String cityName,
+
+        @Schema(description = "ID продавца")
+        Long sellerId,
+
+        @Schema(description = "Имя продавца")
+        String sellerName,
+
+        @Schema(description = "Список изображений объявления")
+        List<AdvertisementImageDto> images
+) {
 }

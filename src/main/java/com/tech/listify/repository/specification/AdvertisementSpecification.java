@@ -29,26 +29,26 @@ public class AdvertisementSpecification {
         if (criteria == null) {
             return spec;
         }
-        if (StringUtils.hasText(criteria.getKeyword())) {
-            spec = spec.and(hasKeyword(criteria.getKeyword()));
+        if (StringUtils.hasText(criteria.keyword())) {
+            spec = spec.and(hasKeyword(criteria.keyword()));
         }
-        if (criteria.getCategoryId() != null) {
-            spec = spec.and(inCategory(criteria.getCategoryId()));
+        if (criteria.categoryId() != null) {
+            spec = spec.and(inCategory(criteria.categoryId()));
         }
-        if (criteria.getCityId() != null) {
-            spec = spec.and(inCity(criteria.getCityId()));
+        if (criteria.cityId() != null) {
+            spec = spec.and(inCity(criteria.cityId()));
         }
-        if (criteria.getMinPrice() != null) {
-            spec = spec.and(priceGreaterThanOrEqual(criteria.getMinPrice()));
+        if (criteria.minPrice() != null) {
+            spec = spec.and(priceGreaterThanOrEqual(criteria.minPrice()));
         }
-        if (criteria.getMaxPrice() != null) {
-            spec = spec.and(priceLessThanOrEqual(criteria.getMaxPrice()));
+        if (criteria.maxPrice() != null) {
+            spec = spec.and(priceLessThanOrEqual(criteria.maxPrice()));
         }
-        if (criteria.getCondition() != null) {
-            spec = spec.and(hasCondition(criteria.getCondition()));
+        if (criteria.condition() != null) {
+            spec = spec.and(hasCondition(criteria.condition()));
         }
-        if (criteria.getSellerId() != null) {
-            spec = spec.and(bySeller(criteria.getSellerId()));
+        if (criteria.sellerId() != null) {
+            spec = spec.and(bySeller(criteria.sellerId()));
         }
 
         return spec;
