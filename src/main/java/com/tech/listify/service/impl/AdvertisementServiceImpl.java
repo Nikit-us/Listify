@@ -105,6 +105,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         log.info("Successfully deleted advertisement with ID: {}", id);
     }
 
+    // В AdvertisementServiceImpl.java
+
     @Override
     @Transactional
     public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImageFiles, String userEmail) {
@@ -112,67 +114,38 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         Advertisement ad = advertisementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Объявление с id " + id + " не найдено."));
-        if (!ad.getSeller().getEmail().equals(userEmail)) {
-            log.warn("Access denied for user {} to update advertisement ID {}", userEmail, id);
-            throw new AccessDeniedException("Вы не можете редактировать это объявление."); // реализовать своё исключение
-        }
 
-        boolean update = false;
+        checkOwnership(ad, userEmail);
 
-        if (updateDto.title() != null) {
-            ad.setTitle(updateDto.title());
-            update = true;
-        }
-        if (updateDto.description() != null) {
-            ad.setDescription(updateDto.description());
-            update = true;
-        }
-        if (updateDto.price() != null) {
-            ad.setPrice(updateDto.price());
-            update = true;
-        }
-        if (updateDto.condition() != null) {
-            ad.setCondition(updateDto.condition());
-            update = true;
-        }
+        advertisementMapper.updateAdvertisementFromDto(updateDto, ad);
 
         if (updateDto.categoryId() != null) {
             Category category = categoryService.findCategoryById(updateDto.categoryId());
             ad.setCategory(category);
-            update = true;
         }
-
         if (updateDto.cityId() != null) {
             City city = cityService.findCityById(updateDto.cityId());
             ad.setCity(city);
-            update = true;
         }
 
-        if (updateDto.status() != null) {
-            ad.setStatus(updateDto.status());
-            update = true;
-        }
-
-        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+        if (newImageFiles != null) {
             log.debug("Replacing images for advertisement ID: {}", id);
             ad.getImages().clear();
             List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImageFiles, ad);
             ad.setImages(savedImageEntities);
-            update = true;
-        } else if (newImageFiles != null) {
-            log.debug("Removing all images for advertisement ID: {}", id);
-            // подумать над удалением файлов
-            ad.getImages().clear();
-            update = true;
         }
 
-        Advertisement finalAd = update ? advertisementRepository.save(ad) : ad;
-        if (update) {
-            log.info("Successfully updated advertisement with ID: {}", finalAd.getId());
-        } else {
-            log.info("No changes detected for advertisement ID: {}", id);
+        Advertisement savedAd = advertisementRepository.save(ad);
+        log.info("Successfully updated advertisement with ID: {}", savedAd.getId());
+
+        return advertisementMapper.toAdvertisementDetailDto(savedAd);
+    }
+
+    private void checkOwnership(Advertisement advertisement, String userEmail) {
+        if (!advertisement.getSeller().getEmail().equals(userEmail)) {
+            log.warn("Access denied for user {} to modify advertisement ID {}", userEmail, advertisement.getId());
+            throw new AccessDeniedException("Вы не можете редактировать это объявление.");
         }
-        return advertisementMapper.toAdvertisementDetailDto(finalAd);
     }
 
     @Override

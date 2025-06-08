@@ -85,6 +85,7 @@ public class SecurityConfig {
                                 "/api/ads/**",
                                 "/api/cities/**",
                                 "/api/categories/**",
+                                "api/ads/search",
                                 "/api/users/{userId}/profile",
                                 "/uploads/**"
                         ).permitAll()

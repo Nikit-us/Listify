@@ -24,5 +24,6 @@ public interface UserMapper {
     UserResponseDto toUserResponseDto(User user);
 
     @Mapping(source = "user.city.id", target = "cityId")
-    UserProfileDto toUserProfileDto(User user, Integer totalActiveAds);
+    @Mapping(source = "user.city.name", target = "cityName")
+    UserProfileDto toUserProfileDto(User user, Integer totalActiveAdvertisements);
 }

@@ -1,10 +1,8 @@
 spring:
-  config:
-    import: classpath:env.yml
   datasource:
-    url: jdbc:postgresql://${db.host}:${db.port}/${db.name}
-    username: ${db.username}
-    password: ${db.password}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -22,28 +20,25 @@ spring:
     static-path-pattern: /static/**
   web:
     resources:
-      static-locations: classpath:/static/, file:${file.upload-dir}
+      static-locations: classpath:/static/, file:${FILE_UPLOAD_DIR}
   cache:
     cache-names: cities, categories
     caffeine:
-      spec: >
-        maximumSize=500, 
-        expireAfterWrite=60m
+      spec: maximumSize=500, expireAfterWrite=60m
+  flyway:
+    enabled: false
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
 app:
   jwt:
-    secret: ${jwt.secret}
-    expiration-ms: ${jwt.expiration-ms}
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS}
   cors:
-    allowed-origins:
-      http://localhost:3000, 
-      http://127.0.0.1:3000
+    allowed-origins: ${ORIGINS}
 upload:
-  path: ./uploads
-  allowed-mime-types:
-    image/jpeg, 
-    image/png, 
-    image/gif
+  path: ${FILE_UPLOAD_DIR:./uploads}
+  allowed-mime-types: image/jpeg, image/png, image/gif

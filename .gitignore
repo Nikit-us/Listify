@@ -39,3 +39,4 @@ out/
 src/main/resources/env.yml
 logs/
 uploads/
+.env
