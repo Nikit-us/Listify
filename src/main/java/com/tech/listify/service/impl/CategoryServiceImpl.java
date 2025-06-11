@@ -2,6 +2,7 @@ package com.tech.listify.service.impl;
 
 import com.tech.listify.dto.categorydto.CategoryCreateDto;
 import com.tech.listify.dto.categorydto.CategoryDto;
+import com.tech.listify.dto.categorydto.CategoryTreeDto;
 import com.tech.listify.exception.ResourceAlreadyExistsException;
 import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.CategoryMapper;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,5 +89,28 @@ public class CategoryServiceImpl implements CategoryService {
 
         log.info("Successfully created {} categories.", savedCategories.size());
         return categoryMapper.toDtoList(savedCategories);
+    }
+
+    @Override
+    @Cacheable("categories_tree")
+    public List<CategoryTreeDto> getCategoryTree() {
+        log.debug("Building category tree");
+        List<Category> allCategories = categoryRepository.findAll();
+        Map<Integer, List<Category>> parentIdToChildrenMap = allCategories.stream()
+                .filter(c -> c.getParentCategory() != null)
+                .collect(Collectors.groupingBy(c -> c.getParentCategory().getId()));
+
+        return allCategories.stream()
+                .filter(c -> c.getParentCategory() == null)
+                .map(root -> buildTree(root, parentIdToChildrenMap))
+                .toList();
+    }
+
+    private CategoryTreeDto buildTree(Category category, Map<Integer, List<Category>> map) {
+        List<CategoryTreeDto> children = map.getOrDefault(category.getId(), Collections.emptyList())
+                .stream()
+                .map(child -> buildTree(child, map))
+                .toList();
+        return new CategoryTreeDto(category.getId(), category.getName(), children);
     }
 }

@@ -2,6 +2,7 @@ package com.tech.listify.controller;
 
 import com.tech.listify.dto.categorydto.CategoryCreateDto;
 import com.tech.listify.dto.categorydto.CategoryDto;
+import com.tech.listify.dto.categorydto.CategoryTreeDto;
 import com.tech.listify.mapper.CategoryMapper;
 import com.tech.listify.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,5 +78,15 @@ public class CategoryController {
         }
         List<CategoryDto> createdCategories = categoryService.createCategories(createDtos);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCategories);
+    }
+
+    @Operation(summary = "Получить иерархическое дерево всех категорий",
+            description = "Возвращает категории в виде дерева, где у каждого элемента есть список дочерних. Доступно всем.")
+    @ApiResponse(responseCode = "200", description = "Дерево категорий успешно получено")
+    @GetMapping("/tree")
+    public ResponseEntity<List<CategoryTreeDto>> getCategoriesAsTree() {
+        log.debug("Request to get categories as a tree");
+        List<CategoryTreeDto> categoryTree = categoryService.getCategoryTree();
+        return ResponseEntity.ok(categoryTree);
     }
 }

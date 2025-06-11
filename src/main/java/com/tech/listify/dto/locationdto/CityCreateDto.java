@@ -1,4 +1,4 @@
-package com.tech.listify.dto.citydto;
+package com.tech.listify.dto.locationdto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

@@ -22,7 +22,7 @@ spring:
     resources:
       static-locations: classpath:/static/, file:${FILE_UPLOAD_DIR}
   cache:
-    cache-names: cities, categories
+    cache-names: cities, categories, categories_tree
     caffeine:
       spec: maximumSize=500, expireAfterWrite=60m
   flyway:

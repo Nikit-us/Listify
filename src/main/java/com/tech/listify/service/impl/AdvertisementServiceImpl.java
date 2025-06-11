@@ -24,8 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tech.listify.exception.FileStorageException.ErrorType;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -94,7 +93,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Объявление с ID " + id + " не найдено."));
 
-        // Проверка прав доступа
         if (!advertisement.getSeller().getEmail().equals(userEmail)) {
             log.warn("Access denied for user {} to delete advertisement ID {}", userEmail, id);
             throw new AccessDeniedException("Вы не можете удалять это объявление.");
@@ -109,7 +107,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 log.error("Failed to delete image {}", image.getImageUrl(), e);
             }
         }
-        // Удаляем само объявление
         advertisementRepository.delete(advertisement);
         log.info("Successfully deleted advertisement with ID: {}", id);
     }
@@ -125,22 +122,23 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         checkOwnership(ad, userEmail);
 
         advertisementMapper.updateAdvertisementFromDto(updateDto, ad);
-
         if (updateDto.categoryId() != null) {
-            Category category = categoryService.findCategoryById(updateDto.categoryId());
-            ad.setCategory(category);
+            ad.setCategory(categoryService.findCategoryById(updateDto.categoryId()));
         }
         if (updateDto.cityId() != null) {
-            City city = cityService.findCityById(updateDto.cityId());
-            ad.setCity(city);
+            ad.setCity(cityService.findCityById(updateDto.cityId()));
         }
 
-        if (newImageFiles != null) {
-            log.debug("Replacing images for advertisement ID: {}", id);
-            ad.getImages().clear();
-            List<AdvertisementImage> savedImageEntities = processAndSaveImages(newImageFiles, ad);
-            ad.setImages(savedImageEntities);
+        if (updateDto.imageIdsToDelete() != null && !updateDto.imageIdsToDelete().isEmpty()) {
+            handleImageDeletion(ad, updateDto.imageIdsToDelete());
         }
+
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+            List<AdvertisementImage> newlySavedImages = processAndSaveImages(newImageFiles, ad);
+            ad.getImages().addAll(newlySavedImages);
+        }
+
+        ensurePreviewImageExists(ad);
 
         Advertisement savedAd = advertisementRepository.save(ad);
         log.info("Successfully updated advertisement with ID: {}", savedAd.getId());
@@ -148,11 +146,76 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return advertisementMapper.toAdvertisementDetailDto(savedAd);
     }
 
+    private void handleImageDeletion(Advertisement ad, List<Long> imageIdsToDelete) {
+        log.debug("Deleting images with IDs: {} for ad ID: {}", imageIdsToDelete, ad.getId());
+
+        Set<Long> idsToDeleteSet = new HashSet<>(imageIdsToDelete);
+
+        Iterator<AdvertisementImage> iterator = ad.getImages().iterator();
+        while (iterator.hasNext()) {
+            AdvertisementImage image = iterator.next();
+            if (idsToDeleteSet.contains(image.getId())) {
+                try {
+                    fileStorageService.deleteFile(image.getImageUrl());
+                    iterator.remove();
+                    log.info("Deleted image with ID: {} and URL: {}", image.getId(), image.getImageUrl());
+                } catch (IOException e) {
+                    log.error("Failed to delete image file: {}", image.getImageUrl(), e);
+                }
+            }
+        }
+    }
+
+    private void ensurePreviewImageExists(Advertisement ad) {
+        if (ad.getImages().isEmpty()) {
+            return;
+        }
+
+        boolean previewExists = ad.getImages().stream().anyMatch(AdvertisementImage::isPreview);
+
+        if (!previewExists) {
+            log.debug("No preview image found for ad ID: {}. Setting a new one.", ad.getId());
+            ad.getImages().forEach(img -> img.setPreview(false)); // Сбрасываем все флаги на всякий случай
+            ad.getImages().getFirst().setPreview(true); // Назначаем первое изображение превью
+        }
+    }
+
     private void checkOwnership(Advertisement advertisement, String userEmail) {
         if (!advertisement.getSeller().getEmail().equals(userEmail)) {
             log.warn("Access denied for user {} to modify advertisement ID {}", userEmail, advertisement.getId());
             throw new AccessDeniedException("Вы не можете редактировать это объявление.");
         }
+    }
+
+    private List<AdvertisementImage> processAndSaveImages(List<MultipartFile> imageFiles, Advertisement advertisement) {
+        if (imageFiles == null || imageFiles.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<AdvertisementImage> savedImages = new ArrayList<>();
+        boolean isFirstImage = advertisement.getImages().isEmpty();
+
+        for (MultipartFile imageFile : imageFiles) {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                try {
+                    String relativeUrl = fileStorageService.saveFile(imageFile, "ad_image");
+                    AdvertisementImage adImage = new AdvertisementImage();
+                    adImage.setImageUrl(relativeUrl);
+                    adImage.setAdvertisement(advertisement);
+
+                    if (isFirstImage) {
+                        adImage.setPreview(true);
+                        isFirstImage = false;
+                    }
+
+                    savedImages.add(adImage);
+                } catch (IOException e) {
+                    log.error("Failed to store image {} for ad {}: {}", imageFile.getOriginalFilename(), advertisement.getId(), e.getMessage());
+                    throw new FileStorageException("Ошибка при сохранении изображения: " + imageFile.getOriginalFilename(), e, ErrorType.SERVER_ERROR);
+                }
+            }
+        }
+        return savedImages;
     }
 
     @Override
@@ -166,33 +229,5 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
 
         return advertisementMapper.toAdvertisementResponseDtoPage(advertisementPage);
-    }
-
-
-    private List<AdvertisementImage> processAndSaveImages(List<MultipartFile> imageFiles, Advertisement advertisement) {
-        if (imageFiles == null || imageFiles.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<AdvertisementImage> savedImages = new ArrayList<>();
-        boolean firstImage = true;
-        for (MultipartFile imageFile : imageFiles) {
-            if (imageFile != null && !imageFile.isEmpty()) {
-                try {
-                    String relativeUrl = fileStorageService.saveFile(imageFile, "ad_image"); // Тип контента
-                    AdvertisementImage adImage = new AdvertisementImage();
-                    adImage.setImageUrl(relativeUrl);
-                    adImage.setAdvertisement(advertisement); // Связь
-                    adImage.setPreview(firstImage);
-                    firstImage = false;
-                    savedImages.add(advertisementImageRepository.save(adImage)); // Сохраняем картинку
-                } catch (IOException e) {
-                    log.error("Failed to store image {} for ad {}: {}", imageFile.getOriginalFilename(), advertisement.getId(), e.getMessage());
-                    // Выбрасываем исключение, чтобы откатить транзакцию
-                    throw new FileStorageException("Ошибка при сохранении изображения: " + imageFile.getOriginalFilename(), e, ErrorType.SERVER_ERROR);
-                }
-            }
-        }
-        return savedImages;
     }
 }

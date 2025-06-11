@@ -1,7 +1,7 @@
 package com.tech.listify.service;
 
-import com.tech.listify.dto.citydto.CityCreateDto;
-import com.tech.listify.dto.citydto.CityDto;
+import com.tech.listify.dto.locationdto.CityCreateDto;
+import com.tech.listify.dto.locationdto.CityDto;
 import com.tech.listify.model.City;
 
 import java.util.List;

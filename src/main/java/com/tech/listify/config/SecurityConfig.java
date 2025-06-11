@@ -76,14 +76,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST,
-                                "/api/cities",
+                                "/api/locations",
                                 "/api/categories").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/register",
                                 "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/ads/**",
-                                "/api/cities/**",
+                                "/api/locations/**",
                                 "/api/categories/**",
                                 "api/ads/search",
                                 "/api/users/{userId}/profile",

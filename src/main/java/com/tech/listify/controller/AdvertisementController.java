@@ -110,7 +110,9 @@ public class AdvertisementController {
     }
 
     @Operation(summary = "Обновить существующее объявление",
-            description = "Обновляет данные объявления, включая опциональную замену изображений. Требуется аутентификация и права владельца.",
+            description = "Обновляет данные объявления. Позволяет выборочно удалять старые изображения и загружать новые. " +
+                    "Для удаления изображений передайте их ID в поле 'imageIdsToDelete' внутри JSON-части 'advertisement'. " +
+                    "Для добавления новых изображений передайте их как файлы в multipart-части 'images'.",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Объявление успешно обновлено",
@@ -125,10 +127,8 @@ public class AdvertisementController {
     @PutMapping("/{id}")
     public ResponseEntity<AdvertisementDetailDto> updateAdvertisement(
             @Parameter(description = "ID обновляемого объявления", required = true, example = "1") @PathVariable Long id,
-            @Valid @RequestPart("advertisement") @Schema(description = "Данные для обновления объявления в формате JSON") AdvertisementUpdateDto updateDto,
-            @RequestPart(value = "images", required = false) @Schema(description = "Новый список файлов изображений (если переданы, старые будут заменены). " +
-                    "Если параметр 'images' не передан (null), изображения не изменяются. " +
-                    "Если передан пустой список 'images', все текущие изображения будут удалены.") List<MultipartFile> images,
+            @Valid @RequestPart("advertisement") @Schema(description = "Данные для обновления в формате JSON, включая опциональный список ID изображений для удаления.") AdvertisementUpdateDto updateDto,
+            @RequestPart(value = "images", required = false) @Schema(description = "Список новых файлов изображений для добавления к объявлению.") List<MultipartFile> images,
             Authentication authentication) {
         String userEmail = authentication.getName();
         log.info("Received request to update advertisement ID: {} from user: {}", id, userEmail);

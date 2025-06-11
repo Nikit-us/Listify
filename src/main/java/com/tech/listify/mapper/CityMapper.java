@@ -1,7 +1,7 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.citydto.CityCreateDto;
-import com.tech.listify.dto.citydto.CityDto;
+import com.tech.listify.dto.locationdto.CityCreateDto;
+import com.tech.listify.dto.locationdto.CityDto;
 import com.tech.listify.model.City;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
