@@ -1,22 +1,17 @@
-FROM gradle:8.8.0-jdk21-jammy AS build
+FROM gradle:jdk21-alpine AS build
 
 WORKDIR /home/gradle/project
 
 COPY --chown=gradle:gradle . .
 
-RUN gradle build --no-daemon -x test
+RUN gradle build -x test --no-daemon
 
-
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-RUN groupadd --system appuser && useradd --system --gid appuser appuser
-
-RUN chown -R appuser:appuser /app
-
 COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 
-USER appuser
+EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]

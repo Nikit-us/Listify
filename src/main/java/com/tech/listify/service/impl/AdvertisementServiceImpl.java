@@ -89,7 +89,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional
-    public void deleteAdvertisement(Long id, String userEmail) {
+    public void deleteAdvertisement(Long id, String userEmail){
         log.info("Attempting to delete advertisement with ID: {} by user: {}", id, userEmail);
         Advertisement advertisement = advertisementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Объявление с ID " + id + " не найдено."));
@@ -100,12 +100,19 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             throw new AccessDeniedException("Вы не можете удалять это объявление.");
         }
 
+        List<AdvertisementImage> imagesToDelete = advertisement.getImages();
+
+        for (AdvertisementImage image : imagesToDelete) {
+            try {
+                fileStorageService.deleteFile(image.getImageUrl());
+            } catch (IOException e) {
+                log.error("Failed to delete image {}", image.getImageUrl(), e);
+            }
+        }
         // Удаляем само объявление
         advertisementRepository.delete(advertisement);
         log.info("Successfully deleted advertisement with ID: {}", id);
     }
-
-    // В AdvertisementServiceImpl.java
 
     @Override
     @Transactional
