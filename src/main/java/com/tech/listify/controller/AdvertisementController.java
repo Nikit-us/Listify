@@ -154,7 +154,7 @@ public class AdvertisementController {
         String userEmail = authentication.getName();
         log.info("Received request to delete advertisement ID: {} from user: {}", id, userEmail);
         advertisementService.deleteAdvertisement(id, userEmail);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
 }
