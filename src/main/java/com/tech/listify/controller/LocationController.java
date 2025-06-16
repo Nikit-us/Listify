@@ -54,7 +54,7 @@ public class LocationController {
             @Parameter(description = "ID района", required = true) @RequestParam Integer districtId) {
         List<CityDto> cities = cityRepository.findByDistrictId(districtId).stream()
                 .map(city -> new CityDto(city.getId(), city.getName()))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(cities);
     }
 }

@@ -99,7 +99,7 @@ public class AdvertisementController {
     })
     @GetMapping("/search")
     public ResponseEntity<Page<AdvertisementResponseDto>> searchAdvertisements(
-            @Parameter(hidden = true) // DTO для GET-параметров лучше описать полями
+            @Parameter(hidden = true)
             @ModelAttribute AdvertisementSearchCriteriaDto criteria,
             @Parameter(hidden = true)
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
