@@ -23,16 +23,13 @@ public class City {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    // ИЗМЕНЕНО: Убираем UNIQUE, т.к. уникальность теперь составная (имя + район)
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    // ДОБАВЛЕНО: Связь "многие-к-одному" с районом
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "district_id", nullable = false)
     private District district;
 
-    // Эти связи остаются без изменений
     @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
 

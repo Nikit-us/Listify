@@ -41,7 +41,7 @@ public interface AdvertisementMapper {
             return null;
         }
         return ad.getImages().stream()
-                .filter(AdvertisementImage::isPreview)
+                .filter(AdvertisementImage::getIsPreview)
                 .findFirst()
                 .map(AdvertisementImage::getImageUrl)
                 .orElse(ad.getImages().getFirst().getImageUrl());

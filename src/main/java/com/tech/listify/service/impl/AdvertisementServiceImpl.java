@@ -171,12 +171,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             return;
         }
 
-        boolean previewExists = ad.getImages().stream().anyMatch(AdvertisementImage::isPreview);
+        boolean previewExists = ad.getImages().stream().anyMatch(AdvertisementImage::getIsPreview);
 
         if (!previewExists) {
             log.debug("No preview image found for ad ID: {}. Setting a new one.", ad.getId());
-            ad.getImages().forEach(img -> img.setPreview(false)); // Сбрасываем все флаги на всякий случай
-            ad.getImages().getFirst().setPreview(true); // Назначаем первое изображение превью
+            ad.getImages().forEach(img -> img.setIsPreview(false)); // Сбрасываем все флаги на всякий случай
+            ad.getImages().getFirst().setIsPreview(true); // Назначаем первое изображение превью
         }
     }
 
@@ -204,7 +204,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                     adImage.setAdvertisement(advertisement);
 
                     if (isFirstImage) {
-                        adImage.setPreview(true);
+                        adImage.setIsPreview(true);
                         isFirstImage = false;
                     }
 

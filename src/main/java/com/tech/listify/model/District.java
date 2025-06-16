@@ -11,7 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"region", "cities"}) // Исключаем связи для предотвращения рекурсии
+@ToString(exclude = {"region", "cities"})
 @Entity
 @Table(name = "districts")
 public class District {

@@ -17,6 +17,7 @@ public interface CityMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "users", ignore = true)
     @Mapping(target = "advertisements", ignore = true)
+    @Mapping(target = "district", ignore = true)
     City toEntity(CityCreateDto dto);
 
     List<City> toEntityList(List<CityCreateDto> dtoList);

@@ -29,7 +29,7 @@ public class AdvertisementImage {
     private String imageUrl;
 
     @Column(name = "is_preview", nullable = false)
-    private boolean isPreview = false;
+    private Boolean isPreview = false;
 
     @CreationTimestamp
     @Column(name = "uploaded_at", nullable = false, updatable = false)
