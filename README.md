@@ -42,7 +42,7 @@
 
 - `Java 21`
 - `Gradle 8.x`
-- `Docker` и `Docker Compose` (для запуска базы данных)
+- `Docker` и `Docker Compose`
 
 ### Установка и запуск
 
@@ -54,32 +54,31 @@
     ```
 
 2.  **Настройте переменные окружения:**
-    Вам необходимо создать файл `env.yml` в директории `src/main/resources/` по аналогии с `application.yml`. Он должен содержать секретные данные:
+    Вам необходимо создать файл `.env` в корневой директории. Он должен содержать секретные данные:
 
-    ```yaml
-    # src/main/resources/env.yml
-    db:
-      host: localhost
-      port: 5432
-      name: listify_db
-      username: your_db_user
-      password: your_db_password
+       ```env
+    # Database configuration
+    DB_HOST=localhost                   # Хост базы данных
+    DB_PORT=5432                        # Порт PostgreSQL по умолчанию
+    DB_NAME=listify_db                  # Название базы данных
+    DB_USERNAME=your_db_user            # Имя пользователя БД
+    DB_PASSWORD=your_db_password        # Пароль пользователя БД
 
-    jwt:
-      secret: "ваш_очень_длинный_и_секретный_ключ_в_формате_base64"
-      expiration-ms: 86400000 # 24 часа
-    ```
+    # JWT configuration
+    JWT_SECRET=your_base64_jwt_secret_key_here     # Длинный секретный ключ (Base64)
+    JWT_EXPIRATION_MS=86400000                     # Время жизни токена в миллисекундах (24 часа)
 
-3.  **Запустите базу данных PostgreSQL через Docker:**
+    # File uploads
+    UPLOAD_PATH=./uploads              # Локальный путь к папке для загрузок (создаётся автоматически)
+
+    # CORS configuration
+    ORIGINS=http://localhost:3000,http://127.0.0.1:3000  # Разрешённые источники для CORS (frontend)
+       ```  
+
+3.  **Запустите сборку образа и контейнера Docker:**
 
     ```bash
-    docker-compose up -d
-    ```
-
-4.  **Соберите и запустите приложение с помощью Gradle:**
-
-    ```bash
-    ./gradlew bootRun
+    docker-compose up --build -d
     ```
 
     Приложение будет доступно по адресу `http://localhost:8080`.
