@@ -73,11 +73,11 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
         }
         Tika tika = new Tika();
         String detectedMimeType = tika.detect(file.getInputStream());
-//        if (!allowedMimeTypes.contains(detectedMimeType)) {
-//            log.error("File upload rejected. Detected MIME type '{}' is not allowed. Original filename: {}",
-//                    detectedMimeType, file.getOriginalFilename());
-//            throw new FileStorageException("Недопустимый тип файла. Разрешены только изображения (JPEG, PNG, GIF).", ErrorType.CLIENT_ERROR);
-//        }
+        if (!allowedMimeTypes.contains(detectedMimeType)) {
+            log.error("File upload rejected. Detected MIME type '{}' is not allowed. Original filename: {}",
+                    detectedMimeType, file.getOriginalFilename());
+            throw new FileStorageException("Недопустимый тип файла. Разрешены только изображения (JPEG, PNG, GIF).", ErrorType.CLIENT_ERROR);
+        }
     }
 
     private String determineSubdirectory(String contentType) {
