@@ -36,7 +36,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final CategoryService categoryService;
     private final CityService cityService;
     private final AdvertisementMapper advertisementMapper;
-    private final AdvertisementImageRepository advertisementImageRepository;
     private final FileStorageService fileStorageService;
 
     @Override
@@ -73,7 +72,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     @Transactional(readOnly = true)
     public AdvertisementDetailDto getAdvertisementById(Long id) {
         log.debug("Fetching advertisement with ID: {}", id);
-        Advertisement ad = advertisementRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Объявление с id " + id + " не найдено."));
+        Advertisement ad = findAdvertisementByIdOrThrow(id);
         return advertisementMapper.toAdvertisementDetailDto(ad);
     }
 
@@ -83,15 +82,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         log.debug("Fetching all active advertisements, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
         Page<Advertisement> activeAdsPage = advertisementRepository.findByStatus(AdvertisementStatus.ACTIVE, pageable);
         log.debug("Found {} active advertisements on page {}", activeAdsPage.getNumberOfElements(), pageable.getPageNumber());
-        return advertisementMapper.toAdvertisementResponseDtoPage(activeAdsPage);
+        return activeAdsPage.map(this::mapToDtoWithPreview);
     }
 
     @Override
     @Transactional
     public void deleteAdvertisement(Long id, String userEmail){
         log.info("Attempting to delete advertisement with ID: {} by user: {}", id, userEmail);
-        Advertisement advertisement = advertisementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Объявление с ID " + id + " не найдено."));
+        Advertisement advertisement = findAdvertisementByIdOrThrow(id);
 
         if (!advertisement.getSeller().getEmail().equals(userEmail)) {
             log.warn("Access denied for user {} to delete advertisement ID {}", userEmail, id);
@@ -116,8 +114,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImageFiles, String userEmail) {
         log.info("Attempting to update advertisement with ID: {} by user: {}", id, userEmail);
 
-        Advertisement ad = advertisementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Объявление с id " + id + " не найдено."));
+        Advertisement ad =findAdvertisementByIdOrThrow(id);
 
         checkOwnership(ad, userEmail);
 
@@ -144,6 +141,41 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         log.info("Successfully updated advertisement with ID: {}", savedAd.getId());
 
         return advertisementMapper.toAdvertisementDetailDto(savedAd);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
+        log.debug("Searching advertisements with criteria: {} and pageable: {}", criteria, pageable);
+        Specification<Advertisement> specification = AdvertisementSpecification.fromCriteria(criteria);
+        Page<Advertisement> advertisementPage = advertisementRepository.findAll(specification, pageable);
+        log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
+        return advertisementPage.map(this::mapToDtoWithPreview);
+    }
+    private AdvertisementResponseDto mapToDtoWithPreview(Advertisement ad) {
+        AdvertisementResponseDto dto = advertisementMapper.toAdvertisementResponseDto(ad);
+        String previewUrl = determinePreviewUrl(ad);
+
+        return new AdvertisementResponseDto(
+                dto.id(),
+                dto.title(),
+                dto.price(),
+                dto.cityId(),
+                dto.cityName(),
+                dto.createdAt(),
+                previewUrl
+        );
+    }
+
+    private String determinePreviewUrl(Advertisement ad) {
+        if (ad.getImages() == null || ad.getImages().isEmpty()) {
+            return null;
+        }
+        return ad.getImages().stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsPreview()))
+                .findFirst()
+                .map(AdvertisementImage::getImageUrl)
+                .orElse(ad.getImages().getFirst().getImageUrl());
     }
 
     private void handleImageDeletion(Advertisement ad, List<Long> imageIdsToDelete) {
@@ -218,16 +250,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return savedImages;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
-        log.debug("Searching advertisements with criteria: {} and pageable: {}", criteria, pageable);
-
-        Specification<Advertisement> specification = AdvertisementSpecification.fromCriteria(criteria);
-
-        Page<Advertisement> advertisementPage = advertisementRepository.findAll(specification, pageable);
-        log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
-
-        return advertisementMapper.toAdvertisementResponseDtoPage(advertisementPage);
+    private Advertisement findAdvertisementByIdOrThrow(Long id) {
+        return advertisementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Объявление с ID " + id + " не найдено."));
     }
 }

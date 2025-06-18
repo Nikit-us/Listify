@@ -36,7 +36,8 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserProfileDto getUserProfileById(Long userId) {
         log.debug("Fetching user profile for ID: {}", userId);
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + userId + " не найден."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + userId + " не найден."));
         int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
         return userMapper.toUserProfileDto(user, activeAdsCount);
     }
@@ -45,9 +46,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserProfileDto updateUserProfile(String userEmail, UserUpdateProfileDto updateDto, MultipartFile avatarFile) throws IOException {
         log.info("Attempting to update profile for user: {}", userEmail);
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Пользователь с email " + userEmail + " не найден."));
-
+        User user = findUserByEmailOrThrow(userEmail);
         boolean isProfileUpdated = updateProfileData(user, updateDto);
         boolean isAvatarUpdated = updateAvatar(user, avatarFile);
 
@@ -93,7 +92,6 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         log.debug("Processing new avatar for user: {}", user.getEmail());
-        // Старый аватар удалится фоновым процессом очистки
         String newAvatarUrl = fileStorageService.saveFile(avatarFile, "avatar");
         user.setAvatarUrl(newAvatarUrl);
         log.info("New avatar uploaded for user {}. URL: {}", user.getEmail(), newAvatarUrl);
@@ -104,12 +102,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserProfileDto getCurrentUserProfile(String userEmail) {
         log.debug("Fetching current user profile for email: {}", userEmail);
-        User user = userRepository.findByEmail(userEmail)
+        User user = findUserByEmailOrThrow(userEmail);
+        int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
+        return userMapper.toUserProfileDto(user, activeAdsCount);
+    }
+
+    private User findUserByEmailOrThrow(String userEmail) {
+        return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> {
                     log.error("Authenticated user with email {} not found in database.", userEmail);
                     return new ResourceNotFoundException("Пользователь с email " + userEmail + " не найден.");
                 });
-        int activeAdsCount = advertisementRepository.countBySellerIdAndStatus(user.getId(), AdvertisementStatus.ACTIVE);
-        return userMapper.toUserProfileDto(user, activeAdsCount);
     }
 }

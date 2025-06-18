@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,6 +28,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -77,6 +79,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST,
                                 "/api/locations/**",
+                                "/api/admin/**",
                                 "/api/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/register",
@@ -85,7 +88,7 @@ public class SecurityConfig {
                                 "/api/ads/**",
                                 "/api/locations/**",
                                 "/api/categories/**",
-                                "api/ads/search",
+                                "/api/ads/search",
                                 "/api/users/{userId}/profile",
                                 "/uploads/**"
                         ).permitAll()

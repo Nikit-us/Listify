@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+    <property name="LOGS_PATH" value="./logs"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
@@ -10,13 +11,45 @@
         </encoder>
     </appender>
 
+    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_PATH}/listify.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_PATH}/archived/listify_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory> </rollingPolicy>
+    </appender>
+
+    <appender name="ErrorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_PATH}/errors.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level> <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_PATH}/archived/errors_%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>60</maxHistory> </rollingPolicy>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="Console"/>
-    </root>
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="ErrorFile"/> </root>
 
-    <logger name="com.tech.listify" level="INFO" additivity="false">
+    <logger name="com.tech.listify" level="DEBUG" additivity="false">
         <appender-ref ref="Console"/>
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="ErrorFile"/>
     </logger>
+
+    <springProfile name="dev, test">
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    </springProfile>
 
     <springProfile name="prod">
         <logger name="org.springframework" level="WARN"/>

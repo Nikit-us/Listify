@@ -36,7 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-src/main/resources/env.yml
+src/main/resources/keys/
 logs/
 uploads/
 .env
+keys/

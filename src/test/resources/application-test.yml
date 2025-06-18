@@ -5,18 +5,27 @@ spring:
     username: sa
     password: ""
 
-  sql:
-    init:
-      mode: always
+  flyway:
+    enabled: false
+
   jpa:
+    defer-datasource-initialization: true
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: false
 
+  sql:
+    init:
+      mode: always
+
+app:
+  jwt:
+    expiration-ms: 3600000
+  cors:
+    allowed-origins: http://localhost:9002
+
 logging:
   level:
     root: WARN
-    com.example.listify: INFO
-    org.springframework.test: INFO
-    org.springframework.boot.test: INFO
+    com.tech.listify: INFO

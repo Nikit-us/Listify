@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestControllerAdvice
 @Slf4j
@@ -135,9 +136,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
+        String incidentId = UUID.randomUUID().toString();
         String path = getPath(request);
-        log.error("An unexpected error occurred on path [{}]: {}", path, ex.getMessage(), ex); // Логируем со стектрейсом!
-        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Произошла непредвиденная ошибка сервера.", request);
+
+        log.error("Unexpected error on path [{}], incidentId=[{}]: {}", path, incidentId, ex.getMessage(), ex);
+        String userMessage = String.format("Произошла непредвиденная ошибка сервера. Пожалуйста, обратитесь в поддержку, указав код инцидента: %s", incidentId);
+
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", userMessage, request);
     }
 
     /**

@@ -1,7 +1,6 @@
--- V1__Initial_schema.sql
 DROP TABLE IF EXISTS advertisement_images, advertisements, user_roles, users, categories, cities, districts, regions, roles CASCADE;
 
--- === СОЗДАНИЕ НОВОЙ СТРУКТРУРЫ ТАБЛИЦ ===
+-- === СОЗДАНИЕ СТРУКТРУРЫ ТАБЛИЦ ===
 
 -- Создание таблицы областей
 CREATE TABLE regions (
