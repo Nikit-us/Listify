@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -72,25 +74,33 @@ public class AdminController {
             @Parameter(description = "Дата в формате yyyy-MM-dd (опционально, если не указана - логи за все время)")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
+        try {
+            String taskId = UUID.randomUUID().toString();
 
-        // ИЗМЕНЕНИЕ: Тип future теперь CompletableFuture
-        CompletableFuture<String> future = logGenerationService.generateLogReport(Optional.ofNullable(date));
+            CompletableFuture<Void> future = logGenerationService.generateLogReport(taskId, Optional.ofNullable(date));
 
-        // ИЗМЕНЕНИЕ: Мы больше не ждем .get(). Вместо этого мы можем добавить обработчик,
-        // который просто залогирует результат, когда он будет готов.
-        future.whenComplete((taskId, ex) -> {
-            if (ex != null) {
-                log.error("Async log report task failed to execute.", ex);
-            } else {
-                log.info("Async log report task with ID '{}' completed.", taskId);
-            }
-        });
+            future.whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Async log report task with ID '{}' failed to execute.", taskId, ex);
+                } else {
+                    log.info("Async log report task with ID '{}' completed successfully (or with status NOT_FOUND).", taskId);
+                }
+            });
 
-        // Сразу же возвращаем ответ клиенту, не дожидаясь завершения задачи
-        return ResponseEntity.accepted().body(Map.of(
-                "message", "Задача по генерации отчета принята в обработку. Проверяйте статус по URL.",
-                "statusCheckUrlHint", "/api/admin/logs/tasks/{taskId}/status"
-        ));
+            // ИЗМЕНЕНИЕ: Сразу возвращаем taskId клиенту
+            log.info("Accepted log report task with ID: {}", taskId);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                    "taskId", taskId,
+                    "message", "Задача по генерации отчета принята в обработку.",
+                    "statusUrl", "/api/admin/logs/tasks/" + taskId + "/status"
+            ));
+
+        } catch (Exception e) {
+            log.error("Failed to submit log generation task", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "error", "Не удалось запустить задачу по генерации отчета."
+            ));
+        }
     }
 
     @Operation(summary = "Проверить статус асинхронной задачи")

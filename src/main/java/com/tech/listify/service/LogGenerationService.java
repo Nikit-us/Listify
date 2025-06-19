@@ -32,9 +32,8 @@ public class LogGenerationService {
     private final Path archivedLogDirectory = mainLogDirectory.resolve("archived");
 
     @Async
-    // ИЗМЕНЕНИЕ: Возвращаемый тип теперь CompletableFuture
-    public CompletableFuture<String> generateLogReport(Optional<LocalDate> dateOpt) {
-        String taskId = UUID.randomUUID().toString();
+    // ИЗМЕНЕНИЕ: Метод теперь принимает taskId как аргумент
+    public CompletableFuture<Void> generateLogReport(String taskId, Optional<LocalDate> dateOpt) {
         taskStatuses.put(taskId, TaskStatus.PENDING);
 
         try {
@@ -47,7 +46,7 @@ public class LogGenerationService {
             if (filesToProcess.isEmpty()) {
                 log.warn("No log files found for the specified criteria. Task ID: {}", taskId);
                 taskStatuses.put(taskId, TaskStatus.NOT_FOUND);
-                return CompletableFuture.completedFuture(taskId);
+                return CompletableFuture.completedFuture(null); // Завершаем успешно, но результат - "не найдено"
             }
 
             String aggregatedContent = aggregateLogContent(filesToProcess);
@@ -59,13 +58,11 @@ public class LogGenerationService {
             taskFiles.put(taskId, resultFile);
             log.info("Log report generated successfully. Task ID: {}", taskId);
 
-            // ИЗМЕНЕНИЕ: Используем CompletableFuture.completedFuture() для успешного результата
-            return CompletableFuture.completedFuture(taskId);
+            return CompletableFuture.completedFuture(null);
 
         } catch (Exception e) {
             log.error("Failed to generate log report for task ID: {}", taskId, e);
             taskStatuses.put(taskId, TaskStatus.FAILED);
-            // ИЗМЕНЕНИЕ: Используем failedFuture для проброса исключения
             return CompletableFuture.failedFuture(e);
         }
     }

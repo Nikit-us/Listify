@@ -41,3 +41,4 @@ logs/
 uploads/
 .env
 keys/
+temp-logs/

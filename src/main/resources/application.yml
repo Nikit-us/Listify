@@ -35,7 +35,6 @@ logging:
 
 app:
   jwt:
-#    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS}
     private-key-path: file:./keys/private_key.pem
     public-key-path: file:./keys/public_key.pem
