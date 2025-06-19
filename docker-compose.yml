@@ -14,3 +14,17 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
+      - ./keys:/app/keys
+
+    entrypoint: >
+      sh -c "
+        if [ ! -f /app/keys/private_key.pem ]; then
+          echo 'Ключи не найдены. Генерирую новую пару RSA ключей...';
+          mkdir -p /app/keys;
+          openssl genpkey -algorithm RSA -out /app/keys/private_key.pem -pkeyopt rsa_keygen_bits:2048;
+          openssl rsa -pubout -in /app/keys/private_key.pem -out /app/keys/public_key.pem;
+          echo 'Ключи успешно сгенерированы.';
+        else
+          echo 'Ключи уже существуют, пропускаю генерацию.';
+        fi &&
+        java -jar -Dspring.profiles.active=prod /app/app.jar"
