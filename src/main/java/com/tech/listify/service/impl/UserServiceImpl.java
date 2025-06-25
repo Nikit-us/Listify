@@ -9,7 +9,7 @@ import com.tech.listify.model.User;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import com.tech.listify.repository.AdvertisementRepository;
 import com.tech.listify.repository.UserRepository;
-import com.tech.listify.service.CityService;
+import com.tech.listify.service.LocationService;
 import com.tech.listify.service.FileStorageService;
 import com.tech.listify.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.io.IOException;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final CityService cityService;
+    private final LocationService locationService;
     private final AdvertisementRepository advertisementRepository;
     private final FileStorageService fileStorageService;
     private final UserMapper userMapper;
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
             if (updateDto.cityId() <= 0) {
                 user.setCity(null);
             } else {
-                City city = cityService.findCityById(updateDto.cityId());
+                City city = locationService.findCityById(updateDto.cityId());
                 user.setCity(city);
             }
             updated = true;

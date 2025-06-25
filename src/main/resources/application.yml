@@ -4,6 +4,10 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -21,12 +25,11 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/, file:${FILE_UPLOAD_DIR}
-  cache:
-    cache-names: cities, categories, categories_tree
-    caffeine:
-      spec: maximumSize=500, expireAfterWrite=60m
+
   flyway:
     enabled: true
+  cache:
+    type: redis
 
 logging:
   level:

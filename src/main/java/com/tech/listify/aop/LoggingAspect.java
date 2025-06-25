@@ -20,7 +20,6 @@ public class LoggingAspect {
     @Pointcut("within(@org.springframework.stereotype.Service *)" +
             " || within(@org.springframework.web.bind.annotation.RestController *)")
     public void springBeanPointcut() {
-        // Метод-маркер для определения @Pointcut
     }
 
     @Around("springBeanPointcut()")

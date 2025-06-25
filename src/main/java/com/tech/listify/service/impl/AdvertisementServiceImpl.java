@@ -10,10 +10,14 @@ import com.tech.listify.repository.*;
 import com.tech.listify.repository.specification.AdvertisementSpecification;
 import com.tech.listify.service.AdvertisementService;
 import com.tech.listify.service.CategoryService;
-import com.tech.listify.service.CityService;
+import com.tech.listify.service.LocationService;
 import com.tech.listify.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,12 +38,13 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final AdvertisementRepository advertisementRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
-    private final CityService cityService;
+    private final LocationService locationService;
     private final AdvertisementMapper advertisementMapper;
     private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
     public AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, List<MultipartFile> images, String sellerEmail) {
         log.info("Creating new advertisement '{}' for user {}", createDto.title(), sellerEmail);
         User seller = userRepository.findByEmail(sellerEmail).orElseThrow(() -> {
@@ -49,7 +54,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         Category category = categoryService.findCategoryById(createDto.categoryId());
 
-        City city = cityService.findCityById(createDto.cityId());
+        City city = locationService.findCityById(createDto.cityId());
         Advertisement newAd = advertisementMapper.toAdvertisement(createDto);
 
         newAd.setSeller(seller);
@@ -70,6 +75,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "advertisements", key = "#id")
     public AdvertisementDetailDto getAdvertisementById(Long id) {
         log.debug("Fetching advertisement with ID: {}", id);
         Advertisement ad = findAdvertisementByIdOrThrow(id);
@@ -87,7 +93,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional
-    public void deleteAdvertisement(Long id, String userEmail){
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "advertisements", key = "#id"),
+            @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
+    })
+    public void deleteAdvertisement(Long id, String userEmail) {
         log.info("Attempting to delete advertisement with ID: {} by user: {}", id, userEmail);
         Advertisement advertisement = findAdvertisementByIdOrThrow(id);
 
@@ -111,10 +121,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional
+    @Caching(
+            put = { @CachePut(value = "advertisements", key = "#id") },
+            evict = { @CacheEvict(value = "advertisements_search", allEntries = true) }
+    )
     public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImageFiles, String userEmail) {
         log.info("Attempting to update advertisement with ID: {} by user: {}", id, userEmail);
 
-        Advertisement ad =findAdvertisementByIdOrThrow(id);
+        Advertisement ad = findAdvertisementByIdOrThrow(id);
 
         checkOwnership(ad, userEmail);
 
@@ -123,7 +137,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             ad.setCategory(categoryService.findCategoryById(updateDto.categoryId()));
         }
         if (updateDto.cityId() != null) {
-            ad.setCity(cityService.findCityById(updateDto.cityId()));
+            ad.setCity(locationService.findCityById(updateDto.cityId()));
         }
 
         if (updateDto.imageIdsToDelete() != null && !updateDto.imageIdsToDelete().isEmpty()) {
@@ -145,6 +159,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("advertisements_search")
     public Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
         log.debug("Searching advertisements with criteria: {} and pageable: {}", criteria, pageable);
         Specification<Advertisement> specification = AdvertisementSpecification.fromCriteria(criteria);
@@ -152,6 +167,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
         return advertisementPage.map(this::mapToDtoWithPreview);
     }
+
     private AdvertisementResponseDto mapToDtoWithPreview(Advertisement ad) {
         AdvertisementResponseDto dto = advertisementMapper.toAdvertisementResponseDto(ad);
         String previewUrl = determinePreviewUrl(ad);

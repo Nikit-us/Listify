@@ -56,11 +56,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "categories", allEntries = true) // Очищаем весь кеш категорий
+    @CacheEvict(cacheNames = "categories", allEntries = true)
     public List<CategoryDto> createCategories(List<CategoryCreateDto> createDtos) {
         log.info("Attempting to create {} new categories.", createDtos.size());
 
-        // Проверка на дубликаты имен в запросе
         List<String> namesToCreate = createDtos.stream()
                 .map(dto -> dto.name().toLowerCase())
                 .toList();
@@ -72,11 +71,9 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ResourceAlreadyExistsException("Категории уже существуют: " + existingNames);
         }
 
-        // Подготовка сущностей к сохранению
         List<Category> categoriesToSave = new ArrayList<>();
         for (CategoryCreateDto dto : createDtos) {
             Category newCategory = categoryMapper.toEntity(dto);
-            // Если указан ID родителя, находим и устанавливаем его
             if (dto.parentCategoryId() != null) {
                 Category parent = self.findCategoryById(dto.parentCategoryId());
                 newCategory.setParentCategory(parent);
@@ -84,7 +81,6 @@ public class CategoryServiceImpl implements CategoryService {
             categoriesToSave.add(newCategory);
         }
 
-        // Сохраняем все подготовленные сущности
         List<Category> savedCategories = categoryRepository.saveAll(categoriesToSave);
 
         log.info("Successfully created {} categories.", savedCategories.size());

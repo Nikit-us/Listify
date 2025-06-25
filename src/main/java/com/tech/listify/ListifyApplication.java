@@ -7,9 +7,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableCaching
 @EnableScheduling
 @EnableAsync
+@EnableCaching
 public class ListifyApplication {
 
     public static void main(String[] args) {

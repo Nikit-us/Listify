@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface CityMapper {
+public interface LocationMapper {
     CityDto toCityResponse(City city);
 
     List<CityDto> toCityResponseList(List<City> cities);

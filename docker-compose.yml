@@ -1,25 +1,56 @@
 version: '3.8'
 
 services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: listify_postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-cache:
+    image: redis:alpine
+    container_name: listify_redis_cache
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
   listify-app:
     build: .
     image: listify-app:latest
     container_name: listify_app_container
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     env_file:
       - .env
-
+    ports:
+      - "8080:8080"
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
       - ./keys:/app/keys
-
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
     entrypoint: >
       sh -c "
-        if [ ! -f /app/keys/private_key.pem ]; then
-          echo 'Ключи не найдены. Генерирую новую пару RSA ключей...';
+        # Проверка и генерация RSA ключей
+        if [ ! -f /app/keys/private_key.pem ] || [ ! -f /app/keys/public_key.pem ]; then
+          echo 'Ключи не найдены или неполные. Генерирую новую пару RSA ключей...';
           mkdir -p /app/keys;
           openssl genpkey -algorithm RSA -out /app/keys/private_key.pem -pkeyopt rsa_keygen_bits:2048;
           openssl rsa -pubout -in /app/keys/private_key.pem -out /app/keys/public_key.pem;
@@ -27,4 +58,10 @@ services:
         else
           echo 'Ключи уже существуют, пропускаю генерацию.';
         fi &&
+        # Запуск Java приложения
         java -jar -Dspring.profiles.active=prod /app/app.jar"
+
+volumes:
+  postgres_data:
+  redis_data:
+
