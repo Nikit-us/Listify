@@ -58,12 +58,16 @@
 
        ```env
     # Database configuration
-    DB_HOST=localhost                   # Хост базы данных
+    DB_HOST=postgres-db                 # Хост базы данных
     DB_PORT=5432                        # Порт PostgreSQL по умолчанию
     DB_NAME=listify_db                  # Название базы данных
     DB_USERNAME=your_db_user            # Имя пользователя БД
     DB_PASSWORD=your_db_password        # Пароль пользователя БД
 
+    #Redis configuration
+    REDIS_HOST=redis-cache      #Хост кэша
+    REDIS_PORT=6379             #Порт Redis по умолчанию 
+    
     # JWT configuration
     JWT_SECRET=your_base64_jwt_secret_key_here     # Длинный секретный ключ (Base64)
     JWT_EXPIRATION_MS=86400000                     # Время жизни токена в миллисекундах (24 часа)
