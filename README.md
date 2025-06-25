@@ -74,7 +74,7 @@
     JWT_EXPIRATION_MS=86400000 # 24 часа
 
     # --- CORS Configuration ---
-    ORIGINS=http://localhost:3000,[http://127.0.0.1:3000](http://127.0.0.1:3000)
+    ORIGINS=http://localhost:3000
 
     # --- File Upload Configuration ---
     FILE_UPLOAD_DIR=/app/uploads
