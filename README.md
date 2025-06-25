@@ -51,7 +51,7 @@
 1.  **Склонируйте репозиторий:**
 
     ```bash
-    git clone [https://github.com/Nikit-us/Listify.git](https://github.com/Nikit-us/Listify.git)
+    git clone https://github.com/Nikit-us/Listify.git
     cd Listify
     ```
 
