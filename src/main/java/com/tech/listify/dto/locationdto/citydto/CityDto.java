@@ -1,4 +1,4 @@
-package com.tech.listify.dto.locationdto;
+package com.tech.listify.dto.locationdto.citydto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -8,6 +8,9 @@ public record CityDto(
         Integer id,
 
         @Schema(description = "Название города")
-        String name
+        String name,
+
+        @Schema(description = "ID района")
+        Integer districtId
 ) {
 }

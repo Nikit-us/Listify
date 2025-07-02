@@ -1,6 +1,6 @@
 package com.tech.listify.config.filter;
 
-import com.tech.listify.service.HitCounterService;
+import com.tech.listify.service.impl.HitCounterService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,7 +55,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             try {
                 logRequestResponse(requestWrapper, responseWrapper, filterChain, requestWrapper, responseWrapper);
             } finally {
-                // ВАЖНО: Копируем тело в реальный ответ ПОСЛЕ всех манипуляций.
                 responseWrapper.copyBodyToResponse();
             }
         }
@@ -76,7 +75,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         if (log.isDebugEnabled() && requestWrapper != null && responseWrapper != null) {
             logRequestBody(requestId, requestWrapper);
-            // ИЗМЕНЕНИЕ: Логируем тело ответа только если его тип подходит для этого.
             logResponseBody(requestId, responseWrapper);
         }
     }

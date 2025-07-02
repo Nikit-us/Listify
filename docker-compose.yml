@@ -48,7 +48,6 @@ services:
         condition: service_started
     entrypoint: >
       sh -c "
-        # Проверка и генерация RSA ключей
         if [ ! -f /app/keys/private_key.pem ] || [ ! -f /app/keys/public_key.pem ]; then
           echo 'Ключи не найдены или неполные. Генерирую новую пару RSA ключей...';
           mkdir -p /app/keys;
@@ -58,7 +57,6 @@ services:
         else
           echo 'Ключи уже существуют, пропускаю генерацию.';
         fi &&
-        # Запуск Java приложения
         java -jar -Dspring.profiles.active=prod /app/app.jar"
 
 volumes:

@@ -1,9 +1,10 @@
 package com.tech.listify.service.impl;
 
-import com.tech.listify.dto.locationdto.CityCreateDto;
-import com.tech.listify.dto.locationdto.CityDto;
-import com.tech.listify.dto.locationdto.DistrictDto;
-import com.tech.listify.dto.locationdto.RegionDto;
+import com.tech.listify.dto.locationdto.citydto.CityCreateDto;
+import com.tech.listify.dto.locationdto.citydto.CityDto;
+import com.tech.listify.dto.locationdto.districtdto.DistrictDto;
+import com.tech.listify.dto.locationdto.regiondto.RegionDto;
+import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.LocationMapper;
 import com.tech.listify.model.City;
 import com.tech.listify.model.District;
@@ -31,8 +32,10 @@ public class LocationServiceImpl implements LocationService {
 
 
     @Override
-    public City findCityById(Integer id) {
-        return null;
+    public CityDto findCityById(Integer id) {
+        log.debug("Fetching city with ID: {}", id);
+        City city = cityRepository.findById(id).orElseThrow( () -> new ResourceNotFoundException("Город с id " + id + " не найден"));
+        return locationMapper.toCityDto(city);
     }
 
     @Override
@@ -48,29 +51,27 @@ public class LocationServiceImpl implements LocationService {
     @Override
     @Cacheable(value = "cities", key = "#districtId")
     public List<CityDto> findAllCities(Integer districtId) {
-        return cityRepository.findByDistrictId(districtId).stream()
-                .map(city -> new CityDto(city.getId(), city.getName()))
-                .toList();
+        return cityRepository.findByDistrictId(districtId)
+                .stream().map(locationMapper::toCityDto).toList();
     }
 
     @Override
     @Cacheable(value = "districts", key = "#regionId")
     public List<DistrictDto> findAllDistricts(Integer regionId) {
-        return districtRepository.findByRegionId(regionId).stream()
-                .map(district -> new DistrictDto(district.getId(), district.getName()))
-                .toList();
+        return districtRepository.findByRegionId(regionId)
+                .stream().map(locationMapper::toDistrictDto).toList();
     }
 
     @Override
     @Cacheable(value = "regions", key = "0")
     public List<RegionDto> findAllRegions() {
-        return regionRepository.findAll().stream()
-                .map(region -> new RegionDto(region.getId(), region.getName()))
-                .toList();
+        return regionRepository.findAll()
+                .stream().map(locationMapper::toRegionDto).toList();
     }
 
     @Override
-    public List<CityDto> createCities(List<CityCreateDto> createDtos) {
+    public List<CityDto> createCities(List<CityCreateDto> createDto) {
+
         return List.of();
     }
 }

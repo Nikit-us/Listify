@@ -12,7 +12,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-// ИЗМЕНЕНО: Добавляем 'district' в исключения ToString
 @ToString(exclude = {"district", "users", "advertisements"})
 @Entity
 @Table(name = "cities")

@@ -1,8 +1,13 @@
 package com.tech.listify.mapper;
 
-import com.tech.listify.dto.locationdto.CityCreateDto;
-import com.tech.listify.dto.locationdto.CityDto;
+import com.tech.listify.dto.locationdto.citydto.CityCreateDto;
+import com.tech.listify.dto.locationdto.citydto.CityDto;
+import com.tech.listify.dto.locationdto.districtdto.DistrictCreateDto;
+import com.tech.listify.dto.locationdto.districtdto.DistrictDto;
+import com.tech.listify.dto.locationdto.regiondto.RegionDto;
 import com.tech.listify.model.City;
+import com.tech.listify.model.District;
+import com.tech.listify.model.Region;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -10,15 +15,20 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface LocationMapper {
-    CityDto toCityResponse(City city);
+    @Mapping(target = "id", ignore = true)
+    City toCity(CityCreateDto dto);
 
-    List<CityDto> toCityResponseList(List<City> cities);
+    @Mapping(target = "districtId",source = "city.district.id")
+    CityDto toCityDto(City city);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "users", ignore = true)
-    @Mapping(target = "advertisements", ignore = true)
-    @Mapping(target = "district", ignore = true)
-    City toEntity(CityCreateDto dto);
+    District toDistrict(DistrictCreateDto dto);
 
-    List<City> toEntityList(List<CityCreateDto> dtoList);
+    @Mapping(target = "regionId", source = "district.region.id")
+    DistrictDto toDistrictDto(District district);
+
+    @Mapping(target = "id", ignore = true)
+    Region toRegion(RegionDto dto);
+
+    RegionDto toRegionDto(Region region);
 }

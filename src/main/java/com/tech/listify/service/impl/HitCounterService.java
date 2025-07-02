@@ -1,4 +1,4 @@
-package com.tech.listify.service;
+package com.tech.listify.service.impl;
 
 import org.springframework.stereotype.Service;
 import java.util.Map;

@@ -1,5 +1,6 @@
 package com.tech.listify.service;
 
+import com.tech.listify.dto.PageResponseDto;
 import com.tech.listify.dto.advertisementdto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +13,11 @@ public interface AdvertisementService {
 
     AdvertisementDetailDto getAdvertisementById(Long id);
 
-    Page<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable);
+    PageResponseDto<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable);
 
     AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> images, String userEmail);
 
-    Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable);
+    PageResponseDto<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable);
 
     void deleteAdvertisement(Long id, String userEmail);
 }

@@ -8,6 +8,7 @@ import com.tech.listify.model.City;
 import com.tech.listify.model.User;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import com.tech.listify.repository.AdvertisementRepository;
+import com.tech.listify.repository.CityRepository;
 import com.tech.listify.repository.UserRepository;
 import com.tech.listify.service.LocationService;
 import com.tech.listify.service.FileStorageService;
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final LocationService locationService;
+    private final CityRepository cityRepository;
     private final AdvertisementRepository advertisementRepository;
     private final FileStorageService fileStorageService;
     private final UserMapper userMapper;
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
             if (updateDto.cityId() <= 0) {
                 user.setCity(null);
             } else {
-                City city = locationService.findCityById(updateDto.cityId());
+                City city = cityRepository.findById(updateDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id " + updateDto.cityId() + " не найден"));
                 user.setCity(city);
             }
             updated = true;

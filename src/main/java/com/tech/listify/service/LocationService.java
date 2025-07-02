@@ -1,9 +1,9 @@
 package com.tech.listify.service;
 
-import com.tech.listify.dto.locationdto.CityCreateDto;
-import com.tech.listify.dto.locationdto.CityDto;
-import com.tech.listify.dto.locationdto.DistrictDto;
-import com.tech.listify.dto.locationdto.RegionDto;
+import com.tech.listify.dto.locationdto.citydto.CityCreateDto;
+import com.tech.listify.dto.locationdto.citydto.CityDto;
+import com.tech.listify.dto.locationdto.districtdto.DistrictDto;
+import com.tech.listify.dto.locationdto.regiondto.RegionDto;
 import com.tech.listify.model.City;
 import com.tech.listify.model.District;
 import com.tech.listify.model.Region;
@@ -11,7 +11,7 @@ import com.tech.listify.model.Region;
 import java.util.List;
 
 public interface LocationService {
-    City findCityById(Integer id);
+    CityDto findCityById(Integer id);
 
     Region findRegionById(Integer id);
 
@@ -23,5 +23,5 @@ public interface LocationService {
 
     List<RegionDto> findAllRegions();
 
-    List<CityDto> createCities(List<CityCreateDto> createDtos);
+    List<CityDto> createCities(List<CityCreateDto> createDto);
 }

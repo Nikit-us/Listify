@@ -41,9 +41,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Cacheable(cacheNames = "categories", key = "#id")
     public Category findCategoryById(Integer id) {
-        log.debug("Fetching category with ID: {} from repository", id);
-
-        return categoryRepository.findById(id)
+        log.debug("Fetching category with ID: {} from repository with subcategories", id);
+        return categoryRepository.findByIdWithSubcategories(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Категория с ID " + id + " не найдена."));
     }
 

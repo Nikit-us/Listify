@@ -1,5 +1,6 @@
 package com.tech.listify.service.impl;
 
+import com.tech.listify.dto.PageResponseDto;
 import com.tech.listify.dto.advertisementdto.*;
 import com.tech.listify.exception.FileStorageException;
 import com.tech.listify.exception.ResourceNotFoundException;
@@ -38,7 +39,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final AdvertisementRepository advertisementRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
-    private final LocationService locationService;
+    private final CityRepository cityRepository;
     private final AdvertisementMapper advertisementMapper;
     private final FileStorageService fileStorageService;
 
@@ -54,7 +55,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         Category category = categoryService.findCategoryById(createDto.categoryId());
 
-        City city = locationService.findCityById(createDto.cityId());
+        City city = cityRepository.findById(createDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id: " + createDto.cityId() + " не найден"));
         Advertisement newAd = advertisementMapper.toAdvertisement(createDto);
 
         newAd.setSeller(seller);
@@ -84,11 +85,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable) {
+    @Cacheable("active_advertisements")
+    public PageResponseDto<AdvertisementResponseDto> getAllActiveAdvertisements(Pageable pageable) {
         log.debug("Fetching all active advertisements, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
         Page<Advertisement> activeAdsPage = advertisementRepository.findByStatus(AdvertisementStatus.ACTIVE, pageable);
         log.debug("Found {} active advertisements on page {}", activeAdsPage.getNumberOfElements(), pageable.getPageNumber());
-        return activeAdsPage.map(this::mapToDtoWithPreview);
+        return PageResponseDto.fromPage(activeAdsPage.map(this::mapToDtoWithPreview));
     }
 
     @Override
@@ -137,7 +139,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             ad.setCategory(categoryService.findCategoryById(updateDto.categoryId()));
         }
         if (updateDto.cityId() != null) {
-            ad.setCity(locationService.findCityById(updateDto.cityId()));
+            ad.setCity(cityRepository.findById(updateDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id " + updateDto.cityId() + " не найден")));
         }
 
         if (updateDto.imageIdsToDelete() != null && !updateDto.imageIdsToDelete().isEmpty()) {
@@ -160,12 +162,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable("advertisements_search")
-    public Page<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
+    public PageResponseDto<AdvertisementResponseDto> searchAdvertisements(AdvertisementSearchCriteriaDto criteria, Pageable pageable) {
         log.debug("Searching advertisements with criteria: {} and pageable: {}", criteria, pageable);
         Specification<Advertisement> specification = AdvertisementSpecification.fromCriteria(criteria);
         Page<Advertisement> advertisementPage = advertisementRepository.findAll(specification, pageable);
         log.debug("Found {} advertisements matching criteria.", advertisementPage.getTotalElements());
-        return advertisementPage.map(this::mapToDtoWithPreview);
+        return PageResponseDto.fromPage(advertisementPage.map(this::mapToDtoWithPreview));
     }
 
     private AdvertisementResponseDto mapToDtoWithPreview(Advertisement ad) {
@@ -223,8 +225,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         if (!previewExists) {
             log.debug("No preview image found for ad ID: {}. Setting a new one.", ad.getId());
-            ad.getImages().forEach(img -> img.setIsPreview(false)); // Сбрасываем все флаги на всякий случай
-            ad.getImages().getFirst().setIsPreview(true); // Назначаем первое изображение превью
+            ad.getImages().forEach(img -> img.setIsPreview(false));
+            ad.getImages().getFirst().setIsPreview(true);
         }
     }
 

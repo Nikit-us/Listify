@@ -81,7 +81,7 @@ class UserServiceImplTest {
         newCity.setName("New City");
 
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
-        when(locationService.findCityById(10)).thenReturn(newCity);
+        // when(locationService.findCityById(10)).thenReturn(newCity);
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toUserProfileDto(any(), anyInt())).thenReturn(new UserProfileDto(1L, "New Name", userEmail, 10, "New City", null, null, 0, null));
 
