@@ -95,7 +95,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/**").permitAll()
+                        .anyRequest().authenticated()
                 );
         http.addFilterAt(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
