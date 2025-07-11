@@ -19,7 +19,8 @@ public class CacheConfig {
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
         ObjectMapper objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule());
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Hibernate6Module());
 
         objectMapper.activateDefaultTyping(
                 BasicPolymorphicTypeValidator.builder()

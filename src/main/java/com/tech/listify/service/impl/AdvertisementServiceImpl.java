@@ -2,6 +2,7 @@ package com.tech.listify.service.impl;
 
 import com.tech.listify.dto.PageResponseDto;
 import com.tech.listify.dto.advertisementdto.*;
+import com.tech.listify.dto.categorydto.CategoryDto;
 import com.tech.listify.exception.FileStorageException;
 import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.mapper.AdvertisementMapper;
@@ -15,6 +16,7 @@ import com.tech.listify.service.LocationService;
 import com.tech.listify.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -39,13 +41,17 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final AdvertisementRepository advertisementRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
     private final CityRepository cityRepository;
     private final AdvertisementMapper advertisementMapper;
     private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "active_advertisements", allEntries = true),
+            @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
+    })
     public AdvertisementDetailDto createAdvertisement(AdvertisementCreateDto createDto, List<MultipartFile> images, String sellerEmail) {
         log.info("Creating new advertisement '{}' for user {}", createDto.title(), sellerEmail);
         User seller = userRepository.findByEmail(sellerEmail).orElseThrow(() -> {
@@ -53,7 +59,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
             return new ResourceNotFoundException("Пользователь с email '" + sellerEmail + "' не найден.");
         });
 
-        Category category = categoryService.findCategoryById(createDto.categoryId());
+        Category category = categoryRepository.findById(createDto.categoryId()).orElseThrow(() -> new ResourceNotFoundException("Категория с id: " + createDto.categoryId() + " не найдена"));
 
         City city = cityRepository.findById(createDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id: " + createDto.cityId() + " не найден"));
         Advertisement newAd = advertisementMapper.toAdvertisement(createDto);
@@ -97,6 +103,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(cacheNames = "advertisements", key = "#id"),
+            @CacheEvict(cacheNames = "active_advertisements", allEntries = true),
             @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
     })
     public void deleteAdvertisement(Long id, String userEmail) {
@@ -124,8 +131,13 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     @Override
     @Transactional
     @Caching(
-            put = { @CachePut(value = "advertisements", key = "#id") },
-            evict = { @CacheEvict(value = "advertisements_search", allEntries = true) }
+            evict = {
+                    @CacheEvict(cacheNames = "active_advertisements", allEntries = true),
+                    @CacheEvict(cacheNames = "advertisements_search", allEntries = true)
+            },
+            put = {
+                    @CachePut(cacheNames = "advertisements", key = "#id")
+            }
     )
     public AdvertisementDetailDto updateAdvertisement(Long id, AdvertisementUpdateDto updateDto, List<MultipartFile> newImageFiles, String userEmail) {
         log.info("Attempting to update advertisement with ID: {} by user: {}", id, userEmail);
@@ -136,7 +148,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         advertisementMapper.updateAdvertisementFromDto(updateDto, ad);
         if (updateDto.categoryId() != null) {
-            ad.setCategory(categoryService.findCategoryById(updateDto.categoryId()));
+            ad.setCategory(categoryRepository.findById(updateDto.categoryId()).orElseThrow(() -> new ResourceNotFoundException("Категория с id: " + updateDto.categoryId() + " не найдена")));
         }
         if (updateDto.cityId() != null) {
             ad.setCity(cityRepository.findById(updateDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id " + updateDto.cityId() + " не найден")));

@@ -2,7 +2,6 @@ package com.tech.listify.service;
 
 import com.tech.listify.dto.PageResponseDto;
 import com.tech.listify.dto.advertisementdto.*;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 

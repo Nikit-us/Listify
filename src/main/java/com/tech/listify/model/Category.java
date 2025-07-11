@@ -1,6 +1,7 @@
 package com.tech.listify.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,6 +36,7 @@ public class Category {
     private Set<Category> subCategories;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Advertisement> advertisements;
 
 }

@@ -8,7 +8,7 @@ import com.tech.listify.model.Category;
 import java.util.List;
 
 public interface CategoryService {
-    Category findCategoryById(Integer id);
+    CategoryDto findCategoryById(Integer id);
 
     List<CategoryDto> findAllCategories();
 

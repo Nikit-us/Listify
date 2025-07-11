@@ -40,10 +40,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Cacheable(cacheNames = "categories", key = "#id")
-    public Category findCategoryById(Integer id) {
+    public CategoryDto findCategoryById(Integer id) {
         log.debug("Fetching category with ID: {} from repository with subcategories", id);
-        return categoryRepository.findByIdWithSubcategories(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Категория с ID " + id + " не найдена."));
+        return categoryMapper.toDto(categoryRepository.findByIdWithSubcategories(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Категория с ID " + id + " не найдена.")));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
         for (CategoryCreateDto dto : createDtos) {
             Category newCategory = categoryMapper.toEntity(dto);
             if (dto.parentCategoryId() != null) {
-                Category parent = self.findCategoryById(dto.parentCategoryId());
+                Category parent = categoryRepository.findById(dto.parentCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Категория с id: " + dto.parentCategoryId() + " не найдена"));
                 newCategory.setParentCategory(parent);
             }
             categoriesToSave.add(newCategory);
