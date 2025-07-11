@@ -27,12 +27,17 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   listify-app:
     build: .
     image: listify-app:latest
     container_name: listify_app_container
-    restart: unless-stopped
+    restart: on-failure
     env_file:
       - .env
     ports:
@@ -45,7 +50,7 @@ services:
       postgres-db:
         condition: service_healthy
       redis-cache:
-        condition: service_started
+        condition: service_healthy
     entrypoint: >
       sh -c "
         if [ ! -f /app/keys/private_key.pem ] || [ ! -f /app/keys/public_key.pem ]; then
