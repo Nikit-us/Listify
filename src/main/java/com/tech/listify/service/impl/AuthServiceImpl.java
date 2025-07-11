@@ -4,11 +4,14 @@ import com.tech.listify.dto.userdto.JwtResponseDto;
 import com.tech.listify.dto.userdto.LoginRequestDto;
 import com.tech.listify.dto.userdto.UserRegistrationDto;
 import com.tech.listify.dto.userdto.UserResponseDto;
+import com.tech.listify.exception.ResourceNotFoundException;
 import com.tech.listify.exception.UserAlreadyExistsException;
 import com.tech.listify.mapper.UserMapper;
+import com.tech.listify.model.City;
 import com.tech.listify.model.Role;
 import com.tech.listify.model.User;
 import com.tech.listify.model.enums.RoleType;
+import com.tech.listify.repository.CityRepository;
 import com.tech.listify.repository.RoleRepository;
 import com.tech.listify.repository.UserRepository;
 import com.tech.listify.service.AuthService;
@@ -42,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final FileStorageService localFileStorageService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CityRepository cityRepository;
 
     @Override
     @Transactional
@@ -53,8 +57,15 @@ public class AuthServiceImpl implements AuthService {
             throw new UserAlreadyExistsException("Пользователь с email '" + registrationDto.email() + "' уже существует.");
         }
 
+        if(userRepository.existsByPhoneNumber(registrationDto.phoneNumber())) {
+            log.warn("Registration failed: Phone number {} already exists.", registrationDto.phoneNumber());
+            throw new UserAlreadyExistsException("Пользователь с телефоном '" + registrationDto.phoneNumber() + "' уже существует.");
+        }
+
         User newUser = userMapper.toUser(registrationDto);
 
+        City city = cityRepository.findById(registrationDto.cityId()).orElseThrow(() -> new ResourceNotFoundException("Город с id: " + registrationDto.cityId() + " не найден"));
+        newUser.setCity(city);
         newUser.setPasswordHash(passwordEncoder.encode(registrationDto.password()));
         log.debug("Password encoded for user: {}", newUser.getEmail());
 

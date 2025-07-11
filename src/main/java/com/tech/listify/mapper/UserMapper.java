@@ -12,7 +12,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
-    @Mapping(target = "city", ignore = true)
     @Mapping(target = "registeredAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "avatarUrl", ignore = true)
