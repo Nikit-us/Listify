@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres-db:
-    image: postgres:15-alpine
+    image: postgres
     container_name: listify_postgres_db
     restart: unless-stopped
     environment:
@@ -20,7 +20,7 @@ services:
       retries: 5
 
   redis-cache:
-    image: redis:alpine
+    image: redis
     container_name: listify_redis_cache
     restart: unless-stopped
     volumes:
