@@ -2,6 +2,7 @@ package com.tech.listify.dto.advertisementdto;
 
 import com.tech.listify.model.enums.AdvertisementCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.criteria.CriteriaBuilder;
 
 import java.math.BigDecimal;
 
@@ -12,6 +13,12 @@ public record AdvertisementSearchCriteriaDto(
 
         @Schema(description = "ID категории для фильтрации")
         Integer categoryId,
+
+        @Schema(description = "ID области")
+        Integer regionId,
+
+        @Schema(description = "ID района")
+        Integer districtId,
 
         @Schema(description = "ID города для фильтрации")
         Integer cityId,

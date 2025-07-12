@@ -2,10 +2,7 @@ package com.tech.listify.repository.specification;
 
 
 import com.tech.listify.dto.advertisementdto.AdvertisementSearchCriteriaDto;
-import com.tech.listify.model.Advertisement;
-import com.tech.listify.model.Category;
-import com.tech.listify.model.City;
-import com.tech.listify.model.User;
+import com.tech.listify.model.*;
 import com.tech.listify.model.enums.AdvertisementCondition;
 import com.tech.listify.model.enums.AdvertisementStatus;
 import jakarta.persistence.criteria.Join;
@@ -41,6 +38,10 @@ public class AdvertisementSpecification {
         }
         if (criteria.cityId() != null) {
             spec = spec.and(inCity(criteria.cityId()));
+        } else if(criteria.districtId() != null) {
+            spec = spec.and(inDistrict(criteria.districtId()));
+        } else if(criteria.regionId() != null) {
+            spec = spec.and(inRegion(criteria.regionId()));
         }
         if (criteria.minPrice() != null) {
             spec = spec.and(priceGreaterThanOrEqual(criteria.minPrice()));
@@ -67,10 +68,9 @@ public class AdvertisementSpecification {
     public static Specification<Advertisement> hasKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
             if (!StringUtils.hasText(keyword)) {
-                return criteriaBuilder.conjunction(); // Возвращает "true" если keyword пустой
+                return criteriaBuilder.conjunction();
             }
             String likePattern = "%" + keyword.toLowerCase() + "%";
-            // Ищем в title ИЛИ description (OR)
             Predicate titleLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), likePattern);
             Predicate descriptionLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), likePattern);
             return criteriaBuilder.or(titleLike, descriptionLike);
@@ -80,7 +80,6 @@ public class AdvertisementSpecification {
     public static Specification<Advertisement> inCategory(Integer categoryId) {
         return (root, query, criteriaBuilder) -> {
             if (categoryId == null) return criteriaBuilder.conjunction();
-            // Присоединяем сущность Category для фильтрации по ее ID
             Join<Advertisement, Category> categoryJoin = root.join("category", JoinType.INNER);
             return criteriaBuilder.equal(categoryJoin.get("id"), categoryId);
         };
@@ -91,6 +90,29 @@ public class AdvertisementSpecification {
             if (cityId == null) return criteriaBuilder.conjunction();
             Join<Advertisement, City> cityJoin = root.join("city", JoinType.INNER);
             return criteriaBuilder.equal(cityJoin.get("id"), cityId);
+        };
+    }
+
+    public static Specification<Advertisement> inRegion(Integer regionId) {
+        return (root, query, criteriaBuilder) -> {
+            if (regionId == null) {
+                return criteriaBuilder.conjunction();
+            }
+            Join<Advertisement, City> cityJoin = root.join("city", JoinType.INNER);
+            Join<City, District> districtJoin = cityJoin.join("district", JoinType.INNER);
+            Join<District, Region> regionJoin = districtJoin.join("region", JoinType.INNER);
+            return criteriaBuilder.equal(regionJoin.get("id"), regionId);
+        };
+    }
+
+    public static Specification<Advertisement> inDistrict(Integer districtId) {
+        return (root, query, criteriaBuilder) -> {
+            if (districtId == null) {
+                return criteriaBuilder.conjunction();
+            }
+            Join<Advertisement, City> cityJoin = root.join("city", JoinType.INNER);
+            Join<City, District> districtJoin = cityJoin.join("district", JoinType.INNER);
+            return criteriaBuilder.equal(districtJoin.get("id"), districtId);
         };
     }
 

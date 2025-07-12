@@ -117,6 +117,8 @@ public class AdvertisementController {
     @Parameters({
             @Parameter(name = "keyword", description = "Ключевое слово для поиска в названии и описании", example = "ноутбук"),
             @Parameter(name = "categoryId", description = "ID категории для фильтрации", example = "3"),
+            @Parameter(name = "regionId", description = "ID области для фильтрации", example = "1"),
+            @Parameter(name = "districtId", description = "ID района для фильтрации", example = "1"),
             @Parameter(name = "cityId", description = "ID города для фильтрации", example = "1"),
             @Parameter(name = "minPrice", description = "Минимальная цена", example = "500"),
             @Parameter(name = "maxPrice", description = "Максимальная цена", example = "1500"),
