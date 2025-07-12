@@ -88,7 +88,7 @@ public class SecurityConfig {
                                 "/api/locations/**",
                                 "/api/categories/**",
                                 "/api/ads/search",
-                                "/api/users/{userId}/profile",
+                                "/api/users/{id}",
                                 "/uploads/**"
                         ).permitAll()
                         .requestMatchers(
